@@ -53,10 +53,36 @@ h1 { font: 600 20px var(--f-body); margin: 0; }
 .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .form { display: flex; flex-direction: column; gap: 10px; }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+.field input { width: 100%; min-width: 0; }
 .field input { height: 44px; border: 1px solid var(--line); border-radius: var(--r-input); background: var(--surface); padding: 0 12px; font-family: var(--f-mono); font-size: 16px; color: var(--ink); }
 .chips-row { display: flex; flex-direction: column; gap: 4px; }
 .chips-label { font-size: 13px; color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 500 14px var(--f-body); cursor: pointer; }
 .chip.on { border-color: var(--ink); background: var(--ink); color: var(--surface); }
+
+/* ── ENTRENAR (Fase 8.6) ── */
+.ex-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.ex-pill { flex: 0 0 auto; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); font: 600 13px var(--f-body); display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.ex-pill.on { border-color: var(--ink); color: var(--ink); }
+.ex-pill.done { color: var(--ok); }
+.exercise { display: flex; flex-direction: column; gap: 10px; }
+.exercise h1 { font: 600 24px var(--f-display); }
+.targets { font-size: 13px; color: var(--muted); }
+.progression { border-left: 3px solid var(--line); padding-left: 10px; }
+.link-row { width: 100%; background: none; border: 0; padding: 0; text-align: left; font: 500 15px var(--f-body); color: var(--ink); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.sets { width: 100%; border-collapse: collapse; font-size: 14px; }
+.sets th { text-align: left; font: 500 11px var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.sets td { padding: 6px; border-bottom: 1px solid var(--line); }
+.sets tr.warm td { color: var(--muted); }
+.set-form { display: flex; flex-direction: column; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 12px; }
+.set-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.set-row input { font-size: 22px; height: 52px; }
+.toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip.flag { display: inline-flex; align-items: center; gap: 4px; }
+.chip.on-crit { border-color: var(--crit); color: var(--crit); background: transparent; }
+.btn:disabled { opacity: .4; cursor: default; }
+.options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.option { width: 100%; text-align: left; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-btn); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; cursor: pointer; font: 500 15px var(--f-body); color: var(--ink); }
+.warn-box { border-left: 4px solid var(--warn); background: var(--surface); border-radius: 6px var(--r-card) var(--r-card) 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }

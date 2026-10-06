@@ -5,18 +5,19 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import { AlertTriangle, Clock, Play, RefreshCw, UtensilsCrossed } from 'lucide-react'
-import type { DailyCheckIn, MealSlot, WorkoutSession } from '@domain/entities'
+import type { DailyCheckIn, MealSlot } from '@domain/entities'
 import { isAppError } from '@domain/errors'
 import {
-  loadNowState, logOffPlan, MEAL_SLOTS, recordNoTime, saveCheckIn, setIrregular, slotForTime, startSession, suggestVersion,
-  type CheckInPatch, type NowState, type SessionVersionSuggestion, type TimeBudget, type TimeBudgetPlan,
+  loadNowState, logOffPlan, MEAL_SLOTS, recordNoTime, saveCheckIn, setIrregular, slotForTime, startSession,
+  type CheckInPatch, type NowState, type TimeBudget, type TimeBudgetPlan,
 } from '@app/services'
 import { useApp } from '../AppContext'
 import { CheckInForm } from '../components/CheckInForm'
 import { Chips } from '../components/Chips'
+import { StartSessionSheet } from '../components/StartSessionSheet'
+import { VERSION_LABEL } from '../labels'
 
 const SLOT_LABEL: Record<MealSlot, string> = { breakfast: 'Desayuno', lunch: 'Comida', snack: 'Snack', dinner: 'Cena' }
-const VERSION_LABEL: Record<WorkoutSession['version'], string> = { full: 'Completa', short: 'Corta', minimal: 'Mínima' }
 const fmtDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })
 
 type Sheet = 'none' | 'no_time' | 'off_plan' | 'irregular' | 'start'
@@ -56,7 +57,7 @@ export function Ahora({ onGoTraining }: { onGoTraining: () => void }) {
       {error && <div className="banner">{error}</div>}
 
       <PrimaryAction action={action} state={state} onCheckIn={() => setEditingCheckIn(true)} onStart={() => setSheet(sheet === 'start' ? 'none' : 'start')} onContinue={onGoTraining} />
-      {sheet === 'start' && t.template && <StartSheet state={state} onStart={(sugg, choice, tm) => act(() => startSession(storage, { template: t.template!, date: state.today, suggestion: sugg, userChoice: choice, time_mode: tm }, nowIso()))} />}
+      {sheet === 'start' && t.template && <StartSessionSheet template={t.template} sleepBucket={state.check_in?.sleep_bucket ?? null} hint="La rotación solo avanza al completar la sesión en ENTRENAR." onStart={(sugg, choice, tm) => act(async () => { await startSession(storage, { template: t.template!, date: state.today, suggestion: sugg, userChoice: choice, time_mode: tm }, nowIso()); onGoTraining() })} />}
 
       <section className="block" aria-label="Check-in">
         <div className="row-head"><span className="eyebrow">Check-in</span>{ci && !editingCheckIn && <button className="link" onClick={() => setEditingCheckIn(true)}>Editar</button>}</div>
@@ -200,24 +201,6 @@ function IrregularSheet({ ci, onSet }: { ci: DailyCheckIn | null; onSet: (on: bo
         <button className="btn" onClick={() => onSet(true, { ...(food ? { irregular_food: food } : {}), ...(activity ? { irregular_activity: activity } : {}) })}>{ci?.irregular ? 'Actualizar' : 'Marcar irregular'}</button>
         {ci?.irregular && <button className="btn secondary" onClick={() => onSet(false, {})}>Quitar</button>}
       </div>
-    </div>
-  )
-}
-
-function StartSheet({ state, onStart }: { state: NowState; onStart: (s: SessionVersionSuggestion, choice: WorkoutSession['version'] | null, tm: 'short' | 'minimal' | null) => void }) {
-  const t = state.today_state.template!
-  const [timeMode, setTimeMode] = useState<'short' | 'minimal' | null>(null)
-  const sugg = suggestVersion({ template: t, sleep_bucket: state.check_in?.sleep_bucket ?? null, time_mode: timeMode })
-  const [choice, setChoice] = useState<WorkoutSession['version'] | null>(null)
-  const version = choice ?? sugg.version
-  const count = (v: WorkoutSession['version']) => v === 'minimal' ? t.exercises.filter(e => e.in_minimal).length : v === 'short' ? t.exercises.filter(e => e.in_short).length : t.exercises.length
-  return (
-    <div className="sheet">
-      <div className="eyebrow">Iniciar {t.name}</div>
-      {sugg.reason === 'sleep_short' && <p className="note status-warn">Dormiste menos de 6 h: te sugiero la versión corta. Tú decides.</p>}
-      <Chips label="Versión" options={(['full', 'short', 'minimal'] as const).map(v => ({ v, l: `${VERSION_LABEL[v]} · ${count(v)} ej.${sugg.version === v ? ' · sugerida' : ''}` }))} value={version} onChange={v => { setChoice(v as WorkoutSession['version']); setTimeMode(v === 'short' ? 'short' : v === 'minimal' ? 'minimal' : null) }} />
-      <button className="btn" onClick={() => onStart(sugg, choice, timeMode)}><Play size={18} strokeWidth={2} aria-hidden /> Iniciar versión {VERSION_LABEL[version].toLowerCase()}</button>
-      <p className="muted small">El registro serie a serie llega en la pantalla ENTRENAR (8.6). La rotación solo avanza al completar.</p>
     </div>
   )
 }

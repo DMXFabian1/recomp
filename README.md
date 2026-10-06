@@ -68,7 +68,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.3 Domain model: schemas Zod, backup validado, getToday, nutrición de ayer
 - [x] 8.4 Training engine (doble progresión, −10 %, estancamiento, finalización de sesión, versión corta/mínima, sustitución)
 - [x] 8.5 AHORA (check-in parcial, qué toca hoy vía getToday, ayer con adherencia ≠ proteína, acción dominante, No tengo tiempo, Me salí, día irregular)
-- [ ] 8.6 Entrenamiento
+- [x] 8.6 Entrenamiento (series, evaluación/progresión visibles, sustitución, completar/abandonar/cancelar, aviso fuera de orden, cardio/remo, prueba mensual)
 - [ ] 8.7 Comida
 - [ ] 8.8 Progreso
 - [ ] 8.9 Reglas de ajuste
@@ -104,3 +104,10 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - `app/services/now.ts` arma el estado leyendo repos y delegando en `getToday`, `getYesterdayNutritionStatus` y `decideNowAction` (una acción dominante: check-in → continuar sesión → registrar ayer → iniciar sesión → preparar/descansar). No escribe nada.
 - `checkin.ts`: upsert parcial por fecha; lo vacío queda sin dato; modo irregular = flag + AppEvent, sin tocar kcal/programa/metas. `meals.ts`: "Me salí" = MealLog `off_plan` con proteína opcional (`null` = no sé); no toca alimentos ni inventario. `sessions.ts`: iniciar sesión abierta con la versión que el usuario elige (sugerencia por sueño/time_mode como dato); una sola abierta; no toca el cursor. "No tengo tiempo" (`domain/progression/timeBudget`): 5 → caminar/preparar, 15 → mínima, 30 → corta, 60+ → completa; registra `no_time`.
 - UI: `ui/screens/Ahora.tsx` + `components/CheckInForm`, `Chips`; `ui/screens/Entrenar.tsx` solo muestra la sesión abierta (integración para 8.6). Regla de arquitectura: la UI no importa `@domain/{progression,rotation,nutrition,substitution,catalog,…}`; todo pasa por `app/services`.
+
+## Entrenamiento (Fase 8.6)
+
+- `app/services/training.ts`: `loadSessionView` (ejercicios de la versión, series, `decideProgression` por ejercicio sobre el historial previo), `logSet`/`updateSet`/`removeSet` (targets copiados de la plantilla; sustituido → targets del original; validación Zod; reps 0 = no realizada), `substitutionOptionsFor`/`substituteInSession` (perfil activo; única integración con catálogo vía `domain/substitution`), `finishSession` (transacción: `completeSession` → sesión + programa; decisión final por ejercicio; Alert `stall` una por ejercicio abierto), `abandonOpenSession`/`cancelOpenSession` (programa intacto).
+- `app/services/cardio.ts`: `logCardio` (presets z2 20/25/30, intervalos 6×1/8×1; RPE 1–10; sin zonas por pulso) y `logMonthlyTest` (10 min, una por mes, split derivado, reemplazo explícito).
+- UI `ui/screens/Entrenar.tsx`: navegación por ejercicio, "Hoy: subir/mantener/bajar/bloqueada/sin datos" con detalle de última vez, tabla de series (calentamientos marcados), registro rápido (kg, reps, RIR, calentamiento, dolor, técnica), sustitución, completar → resumen con decisión por ejercicio y advertencia de fuera de orden; sin sesión: iniciar (hoja compartida con AHORA) + cardio/remo + prueba mensual.
+- Corrección necesaria en infra: `DexieRepository.getLive`/`softDelete` devuelven promesas Dexie (antes `async` nativo cerraba transacciones largas con PrematureCommitError).

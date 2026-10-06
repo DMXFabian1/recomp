@@ -17,8 +17,9 @@ export class DexieRepository<T extends BaseEntity> implements Repository<T> {
     return this.table.toArray()
   }
 
-  async getLive() {
-    return (await this.table.toArray()).filter(e => !e.deleted_at)
+  /** Devuelve promesas Dexie (no async/await nativo) para no cerrar transacciones abiertas entre ticks. */
+  getLive(): Promise<T[]> {
+    return this.table.toArray().then(rows => rows.filter(e => !e.deleted_at))
   }
 
   put(entity: T): Promise<void> {
@@ -29,10 +30,8 @@ export class DexieRepository<T extends BaseEntity> implements Repository<T> {
     return this.table.bulkPut(entities).then(() => undefined)
   }
 
-  async softDelete(id: string, at: string) {
-    const e = await this.table.get(id)
-    if (!e) return
-    await this.table.put({ ...e, deleted_at: at, updated_at: at })
+  softDelete(id: string, at: string): Promise<void> {
+    return this.table.get(id).then(e => (e ? this.table.put({ ...e, deleted_at: at, updated_at: at }).then(() => undefined) : undefined))
   }
 
   hardDelete(id: string): Promise<void> {

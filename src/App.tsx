@@ -23,7 +23,7 @@ export default function App() {
         {tab === 'now' ? (
           <Ahora key={tab} onGoTraining={() => setTab('training')} />
         ) : tab === 'training' ? (
-          <Entrenar key={tab} />
+          <Entrenar key={tab} onGoNow={() => setTab('now')} />
         ) : tab === 'more' ? (
           <Diagnostics />
         ) : (
