@@ -3,7 +3,10 @@
  *
  * Decisiones documentadas:
  *  - Solo sesiones 'completed' son evaluables; abandonadas/abiertas → not_evaluable.
- *  - Series de calentamiento (is_warmup) no cuentan. Sin series de trabajo → not_evaluable.
+ *  - Series de calentamiento (is_warmup) no cuentan. Series NO REALIZADAS (reps = 0: se registró pero no se hizo,
+ *    p. ej. abandono a media sesión) y series INVÁLIDAS (datos imposibles) se excluyen una a una; nunca cuentan
+ *    como "bajo el piso". Sin series de trabajo evaluables → not_evaluable.
+ *  - performance_below_floor = true si AL MENOS UNA serie de trabajo evaluable tiene reps < reps_min.
  *  - Carga de la sesión = máximo weight_kg de las series de trabajo.
  *  - Objetivos: los que la serie guardó al ejecutarse (target_reps_*, target_rir), no los de la plantilla actual;
  *    así el historial no se reinterpreta si la plantilla cambia. Si las series discrepan entre sí → invalid_data.
@@ -20,7 +23,7 @@ function isSubstitutedIn(session: WorkoutSession, exerciseId: string): boolean {
   return (session.substitutions ?? []).some(s => s.original_exercise_id === exerciseId || s.substitute_exercise_id === exerciseId)
 }
 
-function validSet(s: ExerciseSet): boolean {
+export function isValidSet(s: ExerciseSet): boolean {
   return Number.isFinite(s.weight_kg) && s.weight_kg >= 0 && Number.isInteger(s.reps) && s.reps >= 0
     && Number.isInteger(s.target_reps_min) && Number.isInteger(s.target_reps_max) && s.target_reps_min > 0
     && s.target_reps_min <= s.target_reps_max && s.rir >= 0 && s.rir <= 4
@@ -40,14 +43,14 @@ export function evaluateSession(exercise: Exercise, entry: ExerciseHistoryEntry)
   if (session.version === 'minimal') blocked.push('minimal_session')
   if (isSubstitutedIn(session, exercise.id)) blocked.push('substituted')
 
-  const working = entry.sets.filter(s => !s.is_warmup && !s.deleted_at && s.exercise_id === exercise.id)
-    .sort((a, b) => a.set_number - b.set_number)
+  const candidates = entry.sets.filter(s => !s.is_warmup && !s.deleted_at && s.exercise_id === exercise.id)
+  const working = candidates.filter(s => isValidSet(s) && s.reps > 0).sort((a, b) => a.set_number - b.set_number)
   if (working.length === 0) {
     // Sustituido sin series propias: bloqueado (hay sesión) pero sin datos de rendimiento.
     if (blocked.length > 0) return { ...base, outcome: 'blocked', blocked_by: blocked }
+    if (candidates.length > 0 && candidates.some(s => !isValidSet(s))) return { ...base, not_evaluable_reason: 'invalid_data' }
     return { ...base, not_evaluable_reason: 'no_working_sets' }
   }
-  if (!working.every(validSet)) return { ...base, not_evaluable_reason: 'invalid_data' }
   const first = working[0]!
   const targets = { reps_min: first.target_reps_min, reps_max: first.target_reps_max, target_rir: first.target_rir }
   if (!working.every(s => s.target_reps_min === targets.reps_min && s.target_reps_max === targets.reps_max && s.target_rir === targets.target_rir)) {
