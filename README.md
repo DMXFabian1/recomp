@@ -63,7 +63,8 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 
 ## Estado por fase
 
-- [x] 8.1 Foundation (este commit)
+- [x] 8.1 Foundation
+- [x] 8.2 Catálogo de ejercicios (esquema v2, libro DK/BWLA, variantes, grupos de sustitución, warmups, objetivos)
 - [ ] 8.2 Domain model (validadores, servicios base)
 - [ ] 8.3 Training engine
 - [ ] 8.4 AHORA
@@ -73,3 +74,10 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [ ] 8.8 Reglas de ajuste
 - [ ] 8.9 Backup / Import / Export
 - [ ] 8.10 Coach report
+
+## Catálogo de ejercicios (Fase 8.2)
+
+- **Esquema v2** (`SCHEMA_VERSION = 2`): `Exercise` gana campos de catálogo (patrones, músculos, equipo, `functional_rating`, cues, `field_provenance`…) y aparecen `exercise_variants`, `exercise_substitution_groups`, `warmup_exercises`, `training_goals`. Los campos v1 que usa el motor (`pattern`, `equipment`, `increment_kg`, `is_basic`, `is_key_lift`, `substitutes`) no cambian.
+- **Migración v1→v2**: backup automático previo; `enrichLegacyExercise` deriva los campos v2 de los v1 (procedencia `manual`) sin tocar ids ni sets. El mismo mapeo se aplica a backups v1 al importar (`MIGRATIONS[1]`).
+- **Seed**: `src/app/seed/catalog/` — 104 ejercicios de *Strength Training* (DK/BWLA 2009; `source_page` = página del libro) + 9 manuales = 113. Sobre una base ya sembrada, el seed inserta los faltantes y enriquece solo registros de sistema nunca editados; en registros editados por el usuario solo rellena campos ausentes.
+- **Reglas congeladas**: `functional_rating` y los valores típicos de `TrainingGoal` son solo descriptivos (el test de arquitectura prohíbe que `domain/progression` y afines importen el catálogo). Compatibilidad de equipo estricta: un ejercicio es incompatible si falta cualquiera de sus elementos, aunque exista un sustituto compatible. Remo prono con mancuernas (p. 106) y remo con pecho apoyado en máquina son ejercicios distintos relacionados solo por grupo de sustitución.

@@ -66,3 +66,24 @@ describe('arquitectura por capas', () => {
     })
   }
 })
+
+/**
+ * Regla Fase 8.2: el catálogo (functional_rating, TrainingGoal, grupos) es solo descriptivo.
+ * Ningún módulo de reglas (progression, rotation, adherence, metrics, adjustments) puede importarlo,
+ * ni ahora ni cuando existan. Se comprueba sobre todo lo que haya bajo domain/.
+ */
+const RULE_MODULES = ['progression', 'rotation', 'adherence', 'metrics', 'adjustments', 'nutrition']
+describe('el motor de reglas no depende del catálogo', () => {
+  const domainFiles = walk(join(SRC, 'domain'))
+  it('existe al menos un módulo de catálogo que proteger', () => {
+    expect(domainFiles.some(f => /domain[\\/]catalog[\\/]/.test(f))).toBe(true)
+  })
+  for (const file of domainFiles) {
+    const rel = relative(SRC, file).replace(/\\/g, '/')
+    const mod = rel.split('/')[1] ?? ''
+    if (!RULE_MODULES.includes(mod)) continue
+    it(`${rel} no importa domain/catalog`, () => {
+      for (const imp of importsOf(file)) expect(/catalog/.test(imp), `${rel} importa ${imp}`).toBe(false)
+    })
+  }
+})

@@ -19,11 +19,8 @@ describe('migrateBackup', () => {
   })
 
   it('falla con claridad si falta una migración intermedia', () => {
-    if (SCHEMA_VERSION === 1) {
-      // Con v1 no hay versiones anteriores; verificamos el contrato con un registro vacío.
-      expect(Object.keys(MIGRATIONS)).toHaveLength(0)
-      return
-    }
+    // v0 no existe: no hay migración registrada desde 0.
+    expect(MIGRATIONS[0]).toBeUndefined()
     expect(() => migrateBackup(base(0))).toThrow(MigrationError)
   })
 

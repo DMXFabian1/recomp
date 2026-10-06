@@ -32,6 +32,7 @@ export function Diagnostics() {
           <dt>Registros</dt><dd>{info ? total : '…'}</dd>
           <dt>Migrado desde</dt><dd>{migratedFrom === null ? '—' : `v${migratedFrom}`}</dd>
           <dt>Seed</dt><dd>{seed.seeded.length ? `${seed.seeded.length} colecciones` : 'ya existía'}</dd>
+          <dt>Catálogo</dt><dd>{`+${seed.catalog.inserted} nuevos · ${seed.catalog.enriched} enriquecidos · ${seed.catalog.filled} completados`}</dd>
         </dl>
       </div>
       {info && (

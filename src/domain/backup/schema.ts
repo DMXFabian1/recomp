@@ -6,9 +6,9 @@
  * Subirlo exige añadir una entrada en `MIGRATIONS` (domain/backup/migrations.ts)
  * y, si cambia el esquema de stores, en `DEXIE_SCHEMAS` (infra/dexie/schema.ts).
  */
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2 // v2: catálogo de ejercicios (DK)
 
-export const APP_VERSION = '0.1.0'
+export const APP_VERSION = '0.2.0'
 
 export interface BackupFile {
   schema_version: number

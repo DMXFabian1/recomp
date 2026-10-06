@@ -3,13 +3,27 @@
  * Cada función recibe el JSON de la versión `from` y devuelve el de `from + 1`.
  * Reglas (Fase 3): solo añadir campos o colecciones; nunca borrar y renombrar en la misma versión.
  */
+import type { Exercise } from '@domain/entities'
+import { enrichLegacyExercise } from '@domain/catalog/legacy'
 import { SCHEMA_VERSION, type BackupFile } from './schema'
 
 export type BackupMigration = (input: BackupFile) => BackupFile
 
 /** Clave = versión de origen. `MIGRATIONS[1]` migra de v1 a v2. */
 export const MIGRATIONS: Record<number, BackupMigration> = {
-  // v1 es la versión inicial: todavía no hay migraciones.
+  /** v1 → v2: catálogo. Añade colecciones vacías y deriva los campos v2 de cada Exercise. Nada se borra. */
+  1: (b) => ({
+    ...b,
+    schema_version: 2,
+    collections: {
+      ...b.collections,
+      exercises: ((b.collections.exercises ?? []) as Exercise[]).map(enrichLegacyExercise),
+      exercise_variants: b.collections.exercise_variants ?? [],
+      exercise_substitution_groups: b.collections.exercise_substitution_groups ?? [],
+      warmup_exercises: b.collections.warmup_exercises ?? [],
+      training_goals: b.collections.training_goals ?? [],
+    },
+  }),
 }
 
 export class MigrationError extends Error {

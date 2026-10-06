@@ -51,6 +51,11 @@ export const COLLECTIONS = [
   'alerts',
   'app_events',
   'backups',
+  // v2 (catálogo)
+  'exercise_variants',
+  'exercise_substitution_groups',
+  'warmup_exercises',
+  'training_goals',
 ] as const
 
 export type CollectionName = (typeof COLLECTIONS)[number]

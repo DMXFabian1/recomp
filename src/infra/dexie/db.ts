@@ -7,10 +7,25 @@
  */
 import Dexie, { type Table } from 'dexie'
 import { ulid } from 'ulid'
-import { COLLECTIONS, type CollectionName, type EntityMap, type Backup } from '@domain/entities'
+import { COLLECTIONS, type CollectionName, type EntityMap, type Backup, type Exercise } from '@domain/entities'
 import { SCHEMA_VERSION, APP_VERSION } from '@domain/backup/schema'
 import { AppError } from '@domain/errors'
+import { enrichLegacyExercise } from '@domain/catalog/legacy'
 import { DB_NAME, DEXIE_SCHEMAS } from './schema'
+import type { Transaction } from 'dexie'
+
+/**
+ * Transformaciones de datos por versión de destino. Se ejecutan dentro de la transacción
+ * `versionchange`: si fallan, Dexie aborta y la base queda en la versión anterior.
+ */
+const UPGRADES: Record<number, (tx: Transaction) => Promise<void>> = {
+  // v2: deriva los campos de catálogo de cada Exercise v1 sin tocar ids ni campos existentes.
+  2: async (tx) => {
+    await tx.table('exercises').toCollection().modify((e: Exercise) => {
+      Object.assign(e, enrichLegacyExercise(e))
+    })
+  },
+}
 
 if (DEXIE_SCHEMAS.length !== SCHEMA_VERSION) {
   throw new Error(`DEXIE_SCHEMAS (${DEXIE_SCHEMAS.length}) y SCHEMA_VERSION (${SCHEMA_VERSION}) no coinciden`)
@@ -22,9 +37,9 @@ export class RecompDB extends Dexie {
   constructor(name = DB_NAME) {
     super(name)
     DEXIE_SCHEMAS.forEach((stores, i) => {
-      const v = this.version(i + 1).stores(stores)
-      // Aquí se registran transformaciones de datos por versión (v.upgrade(tx => …)) cuando existan.
-      void v
+      const v = this.version(i + 1).stores(stores as Record<string, string>)
+      const upgrade = UPGRADES[i + 1]
+      if (upgrade) v.upgrade(upgrade)
     })
   }
 

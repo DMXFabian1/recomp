@@ -4,7 +4,7 @@
  * si la función lanza, Dexie aborta y nada se persiste.
  */
 import type { Table } from 'dexie'
-import { COLLECTIONS, type CollectionName } from '@domain/entities'
+import { COLLECTIONS, type BaseEntity, type CollectionName } from '@domain/entities'
 import { SCHEMA_VERSION } from '@domain/backup/schema'
 import { AppError } from '@domain/errors'
 import type { Repos, Storage, StorageInfo } from '@repo/index'
@@ -93,6 +93,6 @@ export class DexieStorage implements Storage {
 
 function buildRepos(db: RecompDB): Repos {
   const repos = {} as Record<CollectionName, unknown>
-  for (const c of COLLECTIONS) repos[c] = new DexieRepository(db.tbl(c))
+  for (const c of COLLECTIONS) repos[c] = new DexieRepository(db.tbl(c) as Table<BaseEntity, string>)
   return repos as Repos
 }

@@ -8,7 +8,9 @@ import type { CollectionName } from '@domain/entities'
 
 export type DexieStores = Record<CollectionName, string>
 
-const V1: DexieStores = {
+type V1Collections = Exclude<CollectionName, 'exercise_variants' | 'exercise_substitution_groups' | 'warmup_exercises' | 'training_goals'>
+
+const V1: Record<V1Collections, string> = {
   users: 'id',
   settings: 'id, effective_from',
   baselines: 'id',
@@ -40,7 +42,20 @@ const V1: DexieStores = {
   backups: 'id, created_at, kind',
 }
 
+/**
+ * v2: catálogo de ejercicios. Solo añade stores e índices (nunca borra ni renombra).
+ * `*movement_patterns` = índice multiEntry sobre el array.
+ */
+const V2: DexieStores = {
+  ...V1,
+  exercises: 'id, pattern, is_key_lift, category, *movement_patterns, catalog_source',
+  exercise_variants: 'id, parent_exercise_id, variant_exercise_id',
+  exercise_substitution_groups: 'id, name',
+  warmup_exercises: 'id, region',
+  training_goals: 'id, goal',
+}
+
 /** Índice = versión de Dexie (1-based). `DEXIE_SCHEMAS[0]` es la v1. */
-export const DEXIE_SCHEMAS: DexieStores[] = [V1]
+export const DEXIE_SCHEMAS: Array<Partial<DexieStores>> = [V1, V2]
 
 export const DB_NAME = 'recomp'

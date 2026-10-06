@@ -3,6 +3,9 @@
  * Solo tipos: las reglas viven en domain/<módulo>. Los validadores (zod) se añaden en la Fase 8.2.
  */
 import type { BaseEntity, DayString, HourString, Id, IsoDateTime, MonthString } from './base'
+import type {
+  EquipmentProfile, ExerciseCatalogFields, ExerciseSubstitutionGroup, ExerciseVariant, TrainingGoal, WarmupExercise,
+} from './catalog'
 
 // ───────────────────────── Usuario y configuración ─────────────────────────
 
@@ -48,6 +51,9 @@ export interface Settings extends BaseEntity {
   rest_s: { basic: number; accessory: number }
   theme: 'system' | 'light' | 'dark'
   units: 'metric'
+  /** v2: perfiles de equipamiento; solo filtran la UI del catálogo. */
+  equipment_profiles?: Record<string, EquipmentProfile>
+  active_equipment_profile?: string
   effective_from: DayString
   change_origin: SettingsChangeOrigin
   recommendation_decision_id?: Id
@@ -145,7 +151,12 @@ export type ExercisePattern =
   | 'single_leg' | 'calf' | 'core' | 'arms' | 'glute'
 export type Equipment = 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'kettlebell'
 
-export interface Exercise extends BaseEntity {
+/**
+ * Exercise. Los campos v1 (`pattern`, `equipment` únicos) se conservan para compatibilidad y
+ * siguen siendo los que lee el motor junto con `is_basic`, `is_key_lift` e `increment_kg`.
+ * Los campos de catálogo (v2) son opcionales y solo informativos.
+ */
+export interface Exercise extends BaseEntity, ExerciseCatalogFields {
   name: string
   pattern: ExercisePattern
   equipment: Equipment
@@ -431,4 +442,9 @@ export interface EntityMap {
   alerts: Alert
   app_events: AppEvent
   backups: Backup
+  // v2
+  exercise_variants: ExerciseVariant
+  exercise_substitution_groups: ExerciseSubstitutionGroup
+  warmup_exercises: WarmupExercise
+  training_goals: TrainingGoal
 }

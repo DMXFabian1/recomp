@@ -24,7 +24,7 @@ describe('DexieStorage', () => {
   })
 
   it('el esquema v1 declara exactamente las colecciones del dominio', () => {
-    expect(Object.keys(DEXIE_SCHEMAS[0]!).sort()).toEqual([...COLLECTIONS].sort())
+    expect(Object.keys(DEXIE_SCHEMAS[SCHEMA_VERSION - 1]!).sort()).toEqual([...COLLECTIONS].sort())
   })
 
   it('persiste y lee por índice único (date)', async () => {

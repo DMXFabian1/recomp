@@ -9,6 +9,7 @@ import type {
   TemplateExercise, User, WorkoutTemplate, Baseline,
 } from '@domain/entities'
 import { SEED_IDS as S } from './ids'
+import { seedCatalogExercises, seedEquipmentProfiles } from './catalog'
 
 type Seedable<T> = Omit<T, 'created_at' | 'updated_at' | 'source'>
 
@@ -41,6 +42,11 @@ export const seedSettings: Seedable<Settings> = {
   units: 'metric',
   effective_from: '2026-10-06',
   change_origin: 'seed',
+  equipment_profiles: {
+    home: { name: seedEquipmentProfiles.home.name, items: [...seedEquipmentProfiles.home.items], max_load_kg: seedEquipmentProfiles.home.max_load_kg },
+    gym: { name: seedEquipmentProfiles.gym.name, items: [...seedEquipmentProfiles.gym.items] },
+  },
+  active_equipment_profile: 'gym',
 }
 
 export const seedBaseline: Seedable<Baseline> = {
@@ -54,6 +60,10 @@ export const seedBaseline: Seedable<Baseline> = {
 
 const E = S.exercises
 type Ex = Seedable<Exercise>
+
+/** Catálogo completo v2 (libro + manuales). Los 30 ejercicios del programa conservan sus ids v1. */
+export const seedExercises: Seedable<Exercise>[] = seedCatalogExercises
+
 const ex = (id: string, name: string, pattern: Exercise['pattern'], equipment: Exercise['equipment'],
   increment_kg: number, opts: Partial<Pick<Exercise, 'is_basic' | 'is_key_lift' | 'substitutes'>> = {}): Ex => ({
   id, name, pattern, equipment, increment_kg,
@@ -62,7 +72,8 @@ const ex = (id: string, name: string, pattern: Exercise['pattern'], equipment: E
   substitutes: opts.substitutes ?? [],
 })
 
-export const seedExercises: Ex[] = [
+/** Lista v1 (30 ejercicios). Se conserva solo para simular bases v1 en tests de migración. */
+export const legacySeedExercisesV1: Ex[] = [
   // Key lifts (exactamente 4) — también básicos
   ex(E.squat, 'Sentadilla con barra', 'squat', 'barbell', 5, { is_basic: true, is_key_lift: true, substitutes: [E.legPress, E.gobletSquat] }),
   ex(E.bench, 'Press de banca con barra', 'push_h', 'barbell', 2.5, { is_basic: true, is_key_lift: true, substitutes: [E.inclineDbPress, E.machineChestPress] }),
