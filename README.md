@@ -67,7 +67,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.2 Catálogo de ejercicios (esquema v2, libro DK/BWLA, variantes, grupos de sustitución, warmups, objetivos)
 - [x] 8.3 Domain model: schemas Zod, backup validado, getToday, nutrición de ayer
 - [x] 8.4 Training engine (doble progresión, −10 %, estancamiento, finalización de sesión, versión corta/mínima, sustitución)
-- [ ] 8.5 AHORA
+- [x] 8.5 AHORA (check-in parcial, qué toca hoy vía getToday, ayer con adherencia ≠ proteína, acción dominante, No tengo tiempo, Me salí, día irregular)
 - [ ] 8.6 Entrenamiento
 - [ ] 8.7 Comida
 - [ ] 8.8 Progreso
@@ -98,3 +98,9 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - `completeSession`: único lugar donde `rotation_cursor` avanza (test de arquitectura). Idempotente (sesión ya completada no avanza). Abandonar/cancelar no avanzan. Short/minimal completadas avanzan igual. Otra plantilla válida de la rotación: avanza a la siguiente de la completada (advanced_out_of_order; la que tocaba se pierde). Plantilla fuera de la rotación: se cierra la sesión, el cursor no se mueve (template_mismatch).
 - `suggestSessionVersion` / `resolveSessionVersion`: sueño < 6 h o time_mode short → corta; time_mode minimal → mínima. Recomendar ≠ aplicar: el usuario decide.
 `domain/substitution` (único punto que importa `domain/catalog`): `substituteOptions` (solo compatibles con el perfil; orden calidad → compatible → lateralidad → menor cambio de complejidad; sin functional_rating) y `recordSubstitution` (se guarda en `WorkoutSession.substitutions`; bloquea la progresión de original y sustituto en esa sesión; no toca plantilla ni programa).
+
+## AHORA (Fase 8.5)
+
+- `app/services/now.ts` arma el estado leyendo repos y delegando en `getToday`, `getYesterdayNutritionStatus` y `decideNowAction` (una acción dominante: check-in → continuar sesión → registrar ayer → iniciar sesión → preparar/descansar). No escribe nada.
+- `checkin.ts`: upsert parcial por fecha; lo vacío queda sin dato; modo irregular = flag + AppEvent, sin tocar kcal/programa/metas. `meals.ts`: "Me salí" = MealLog `off_plan` con proteína opcional (`null` = no sé); no toca alimentos ni inventario. `sessions.ts`: iniciar sesión abierta con la versión que el usuario elige (sugerencia por sueño/time_mode como dato); una sola abierta; no toca el cursor. "No tengo tiempo" (`domain/progression/timeBudget`): 5 → caminar/preparar, 15 → mínima, 30 → corta, 60+ → completa; registra `no_time`.
+- UI: `ui/screens/Ahora.tsx` + `components/CheckInForm`, `Chips`; `ui/screens/Entrenar.tsx` solo muestra la sesión abierta (integración para 8.6). Regla de arquitectura: la UI no importa `@domain/{progression,rotation,nutrition,substitution,catalog,…}`; todo pasa por `app/services`.

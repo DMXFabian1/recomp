@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Activity, Dumbbell, LineChart, MoreHorizontal, UtensilsCrossed } from 'lucide-react'
 import { Diagnostics } from '@ui/screens/Diagnostics'
+import { Ahora } from '@ui/screens/Ahora'
+import { Entrenar } from '@ui/screens/Entrenar'
 
 type Tab = 'now' | 'training' | 'meals' | 'progress' | 'more'
 
@@ -12,18 +14,22 @@ const TABS: Array<{ id: Tab; label: string; Icon: typeof Activity }> = [
   { id: 'more', label: 'MÁS', Icon: MoreHorizontal },
 ]
 
-/** Shell mínima (Fase 8.1): 5 pestañas; solo MÁS → Diagnóstico tiene contenido. */
+/** Shell: 5 pestañas. AHORA (8.5) y MÁS → Diagnóstico (8.1) con contenido; ENTRENAR muestra la sesión abierta (integración 8.6). */
 export default function App() {
-  const [tab, setTab] = useState<Tab>('more')
+  const [tab, setTab] = useState<Tab>('now')
   return (
     <div className="shell">
       <main className="content">
-        {tab === 'more' ? (
+        {tab === 'now' ? (
+          <Ahora key={tab} onGoTraining={() => setTab('training')} />
+        ) : tab === 'training' ? (
+          <Entrenar key={tab} />
+        ) : tab === 'more' ? (
           <Diagnostics />
         ) : (
           <>
             <div className="eyebrow">{TABS.find(t => t.id === tab)?.label}</div>
-            <p className="muted">Pendiente de la fase correspondiente (8.4–8.7).</p>
+            <p className="muted">Pendiente de la fase correspondiente (8.7–8.8).</p>
           </>
         )}
       </main>

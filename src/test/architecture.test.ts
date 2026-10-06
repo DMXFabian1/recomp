@@ -31,6 +31,8 @@ function importsOf(file: string): string[] {
 
 const layerOf = (file: string) => relative(SRC, file).split(/[\\/]/)[0] ?? ''
 const targetLayer = (imp: string) => {
+  // Reglas de dominio: la UI solo las usa a través de app/services (Fase 8.5).
+  if (/^@domain\/(progression|rotation|nutrition|substitution|catalog|adherence|metrics|adjustments)\b/.test(imp)) return 'domain-rules'
   const alias = imp.match(/^@(domain|app|repo|infra|ui)\b/)
   if (alias) return alias[1]!
   if (imp === 'dexie' || imp.startsWith('dexie/')) return 'dexie'
@@ -39,7 +41,7 @@ const targetLayer = (imp: string) => {
 }
 
 const FORBIDDEN: Record<string, string[]> = {
-  ui: ['infra', 'dexie'],
+  ui: ['infra', 'dexie', 'domain-rules'],
   app: ['ui', 'infra'],
   domain: ['app', 'repo', 'infra', 'ui', 'dexie', 'react'],
   repo: ['app', 'infra', 'ui', 'dexie', 'react'],

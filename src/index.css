@@ -34,3 +34,29 @@ h1 { font: 600 20px var(--f-body); margin: 0; }
 .tabs button[aria-selected='true'] { color: var(--ink); }
 .btn { height: 52px; border: 0; border-radius: var(--r-btn); background: var(--accent); color: var(--surface); font-weight: 600; width: 100%; cursor: pointer; }
 .btn.secondary { height: 44px; background: transparent; color: var(--accent); border: 1px solid var(--line); }
+
+/* ── AHORA (Fase 8.5) ── */
+.question { font: 600 30px var(--f-display); letter-spacing: .01em; margin: 2px 0 4px; }
+.primary { border-left: 4px solid var(--accent); background: var(--surface); border-radius: 6px var(--r-card) var(--r-card) 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.primary-title { font: 600 22px var(--f-display); line-height: 1.15; }
+.block { border-top: 1px solid var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.row-head { display: flex; justify-content: space-between; align-items: baseline; }
+.small { font-size: 13px; }
+.note { margin: 0; font-size: 14px; border-left: 3px solid var(--line); padding-left: 10px; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.status-warn { color: var(--warn); }
+.link { background: none; border: 0; padding: 0; color: var(--accent); font: 500 13px var(--f-body); cursor: pointer; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn.secondary.active { border-color: var(--warn); color: var(--warn); }
+.quick { display: flex; flex-wrap: wrap; gap: 8px; }
+.quick .btn { width: auto; flex: 1 1 140px; padding: 0 12px; }
+.sheet { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.form { display: flex; flex-direction: column; gap: 10px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.field input { height: 44px; border: 1px solid var(--line); border-radius: var(--r-input); background: var(--surface); padding: 0 12px; font-family: var(--f-mono); font-size: 16px; color: var(--ink); }
+.chips-row { display: flex; flex-direction: column; gap: 4px; }
+.chips-label { font-size: 13px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 500 14px var(--f-body); cursor: pointer; }
+.chip.on { border-color: var(--ink); background: var(--ink); color: var(--surface); }
