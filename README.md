@@ -65,15 +65,15 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 
 - [x] 8.1 Foundation
 - [x] 8.2 Catálogo de ejercicios (esquema v2, libro DK/BWLA, variantes, grupos de sustitución, warmups, objetivos)
-- [ ] 8.2 Domain model (validadores, servicios base)
-- [ ] 8.3 Training engine
-- [ ] 8.4 AHORA
-- [ ] 8.5 Entrenamiento
-- [ ] 8.6 Comida
-- [ ] 8.7 Progreso
-- [ ] 8.8 Reglas de ajuste
-- [ ] 8.9 Backup / Import / Export
-- [ ] 8.10 Coach report
+- [x] 8.3 Domain model: schemas Zod, backup validado, getToday, nutrición de ayer
+- [ ] 8.4 Training engine
+- [ ] 8.5 AHORA
+- [ ] 8.6 Entrenamiento
+- [ ] 8.7 Comida
+- [ ] 8.8 Progreso
+- [ ] 8.9 Reglas de ajuste
+- [ ] 8.10 Backup / Import / Export
+- [ ] 8.11 Coach report
 
 ## Catálogo de ejercicios (Fase 8.2)
 
@@ -81,3 +81,11 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - **Migración v1→v2**: backup automático previo; `enrichLegacyExercise` deriva los campos v2 de los v1 (procedencia `manual`) sin tocar ids ni sets. El mismo mapeo se aplica a backups v1 al importar (`MIGRATIONS[1]`).
 - **Seed**: `src/app/seed/catalog/` — 104 ejercicios de *Strength Training* (DK/BWLA 2009; `source_page` = página del libro) + 9 manuales = 113. Sobre una base ya sembrada, el seed inserta los faltantes y enriquece solo registros de sistema nunca editados; en registros editados por el usuario solo rellena campos ausentes.
 - **Reglas congeladas**: `functional_rating` y los valores típicos de `TrainingGoal` son solo descriptivos (el test de arquitectura prohíbe que `domain/progression` y afines importen el catálogo). Compatibilidad de equipo estricta: un ejercicio es incompatible si falta cualquiera de sus elementos, aunque exista un sustituto compatible. Remo prono con mancuernas (p. 106) y remo con pecho apoyado en máquina son ejercicios distintos relacionados solo por grupo de sustitución.
+
+## Dominio y validación (Fase 8.3)
+
+- `domain/validation`: un schema Zod por colección (`ENTITY_SCHEMAS`), `validateEntity` y `validateBackup`/`parseBackupJson`. Zod valida la **forma** (tipos, enums, rangos, fechas, relaciones internas); nunca contiene reglas de negocio. La validación es pura: en éxito devuelve la misma referencia.
+- `domain/rotation/getToday`: calcula qué toca hoy a partir de programa activo, `effective_from`, `rotation_cursor` y sesiones existentes. **Nunca modifica el cursor** ni crea sesiones.
+- `domain/nutrition`: `calculateEstimatedProtein` (solo con MealLog/recetas/alimentos de ayer; sin datos → `unknown`/`no_data`, nunca inventa) y `getYesterdayNutritionStatus` (adherencia desde `food_yesterday` y proteína completa ≥ piso, ejes independientes).
+- `domain/progression/types.ts`: solo contratos para 8.4; sin lógica.
+- Inicio real del programa: `effective_from = 2026-10-06`, primera sesión Pierna A; no se crean sesiones retroactivas ni perdidas.

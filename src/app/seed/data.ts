@@ -346,8 +346,8 @@ export const seedGoal: Seedable<Goal> = {
 }
 
 export const seedMonthlyGoals: Seedable<MonthlyGoal>[] = [
-  { id: 'mg_2026-10', month: '2026-10', weight_pct_range: [-1.5, -4], waist_delta_cm_range: [-2, -4], steps_target: 9000, strength_sessions: 4, cardio_sessions: 2, focus_text: 'Establecer: 3 comidas con proteína, pesarte diario, acostarte 22:45.' },
-  { id: 'mg_2026-11', month: '2026-11', weight_pct_range: [-4, -7], waist_delta_cm_range: [-4, -6], steps_target: 10000, strength_sessions: 4, cardio_sessions: 3, focus_text: 'Progresar: cocinar por lote 2 veces por semana; proteína 6 de 7 días.' },
-  { id: 'mg_2026-12', month: '2026-12', weight_pct_range: [-5, -8.5], waist_delta_cm_range: [-5, -8], steps_target: 9000, strength_sessions: 4, cardio_sessions: 3, focus_text: 'Consolidar: nunca dos fallos seguidos; mantenimiento permitido 24–25 y 31 dic.' },
-  { id: 'mg_2027-01', month: '2027-01', weight_pct_range: [-6.5, -10], waist_delta_cm_range: [-7, -10], steps_target: 10000, strength_sessions: 4, cardio_sessions: 4, focus_text: 'Evaluar: prueba de fuerza la última semana; revisión completa y bloque siguiente.' },
+  { id: 'mg_2026-10', month: '2026-10', weight_pct_range: [-4, -1.5], waist_delta_cm_range: [-4, -2], steps_target: 9000, strength_sessions: 4, cardio_sessions: 2, focus_text: 'Establecer: 3 comidas con proteína, pesarte diario, acostarte 22:45.' },
+  { id: 'mg_2026-11', month: '2026-11', weight_pct_range: [-7, -4], waist_delta_cm_range: [-6, -4], steps_target: 10000, strength_sessions: 4, cardio_sessions: 3, focus_text: 'Progresar: cocinar por lote 2 veces por semana; proteína 6 de 7 días.' },
+  { id: 'mg_2026-12', month: '2026-12', weight_pct_range: [-8.5, -5], waist_delta_cm_range: [-8, -5], steps_target: 9000, strength_sessions: 4, cardio_sessions: 3, focus_text: 'Consolidar: nunca dos fallos seguidos; mantenimiento permitido 24–25 y 31 dic.' },
+  { id: 'mg_2027-01', month: '2027-01', weight_pct_range: [-10, -6.5], waist_delta_cm_range: [-10, -7], steps_target: 10000, strength_sessions: 4, cardio_sessions: 4, focus_text: 'Evaluar: prueba de fuerza la última semana; revisión completa y bloque siguiente.' },
 ]
