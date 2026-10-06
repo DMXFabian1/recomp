@@ -169,6 +169,13 @@ export interface Exercise extends BaseEntity, ExerciseCatalogFields {
 export type SessionStatus = 'open' | 'completed' | 'abandoned'
 export type SessionVersion = 'full' | 'short' | 'minimal'
 
+/** Sustitución registrada en una sesión: el ejercicio de la plantilla se hizo con otro. No toca plantilla ni programa. */
+export interface SessionSubstitution {
+  original_exercise_id: Id
+  substitute_exercise_id: Id
+  reason?: 'equipment' | 'pain' | 'preference' | 'other'
+}
+
 export interface WorkoutSession extends BaseEntity {
   template_id: Id
   date: DayString
@@ -178,6 +185,8 @@ export interface WorkoutSession extends BaseEntity {
   version: SessionVersion
   time_mode?: number
   sleep_short_suggested: boolean
+  /** v2.1: sustituciones hechas en esta sesión (8.4). Opcional y aditivo. */
+  substitutions?: SessionSubstitution[]
   duration_s?: number
   tonnage_kg?: number
   note?: string

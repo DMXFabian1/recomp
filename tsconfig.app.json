@@ -29,7 +29,8 @@
       "@app/*": ["./src/app/*"],
       "@repo/*": ["./src/repo/*"],
       "@infra/*": ["./src/infra/*"],
-      "@ui/*": ["./src/ui/*"]
+      "@ui/*": ["./src/ui/*"],
+      "@test/*": ["./src/test/*"]
     }
   },
   "include": ["src"]

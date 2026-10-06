@@ -87,3 +87,31 @@ describe('el motor de reglas no depende del catálogo', () => {
     })
   }
 })
+
+/**
+ * Regla Fase 8.4: rotation_cursor solo puede avanzar en domain/progression/completeSession.ts.
+ * Ninguna otra fuente (domain, app, ui, infra) puede asignarlo, salvo el seed, que lo crea en 0, y los tipos/schemas.
+ */
+describe('rotation_cursor solo cambia en completeSession', () => {
+  const ALLOWED = new Set([
+    'domain/progression/completeSession.ts', // único escritor real
+    'app/seed/data.ts', // crea el programa con cursor 0
+    'test/fixtures/training.ts', // fixtures de test
+    'domain/entities/types.ts', 'domain/validation/entities.ts', 'domain/progression/types.ts', // tipos y schema
+    'domain/rotation/getToday.ts', // copia de SOLO lectura al estado (getToday.test prueba que no muta el programa)
+  ])
+  const ASSIGN = /rotation_cursor\s*[:=](?!=)/
+  for (const file of walk(SRC)) {
+    const rel = relative(SRC, file).replace(/\\/g, '/')
+    if (ALLOWED.has(rel)) continue
+    it(`${rel} no asigna rotation_cursor`, () => {
+      const src = readFileSync(file, 'utf8')
+      const hits = src.split('\n').filter(l => ASSIGN.test(l) && !l.trim().startsWith('*') && !l.trim().startsWith('//'))
+      expect(hits, hits.join('\n')).toEqual([])
+    })
+  }
+  it('completeSession.ts es el único que escribe el cursor', () => {
+    const src = readFileSync(join(SRC, 'domain/progression/completeSession.ts'), 'utf8')
+    expect(ASSIGN.test(src)).toBe(true)
+  })
+})

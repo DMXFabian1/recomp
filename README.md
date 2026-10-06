@@ -66,7 +66,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.1 Foundation
 - [x] 8.2 Catálogo de ejercicios (esquema v2, libro DK/BWLA, variantes, grupos de sustitución, warmups, objetivos)
 - [x] 8.3 Domain model: schemas Zod, backup validado, getToday, nutrición de ayer
-- [ ] 8.4 Training engine
+- [x] 8.4 Training engine (doble progresión, −10 %, estancamiento, finalización de sesión, versión corta/mínima, sustitución)
 - [ ] 8.5 AHORA
 - [ ] 8.6 Entrenamiento
 - [ ] 8.7 Comida
@@ -89,3 +89,12 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - `domain/nutrition`: `calculateEstimatedProtein` (solo con MealLog/recetas/alimentos de ayer; sin datos → `unknown`/`no_data`, nunca inventa) y `getYesterdayNutritionStatus` (adherencia desde `food_yesterday` y proteína completa ≥ piso, ejes independientes).
 - `domain/progression/types.ts`: solo contratos para 8.4; sin lógica.
 - Inicio real del programa: `effective_from = 2026-10-06`, primera sesión Pierna A; no se crean sesiones retroactivas ni perdidas.
+
+## Motor de entrenamiento (Fase 8.4)
+
+`domain/progression` (sin UI, sin catálogo):
+- `evaluateSession`: clasifica cada sesión del historial para un ejercicio: `not_evaluable` (no completada, sin series, datos inválidos) · `blocked` (RIR 0 en básico, dolor, técnica, short, minimal, sustituida) · `progressed` / `no_progress` / `incomparable`. Bloqueado ≠ bajo el piso: una sesión bloqueada nunca es evidencia de progreso ni de bajo rendimiento. Short/minimal cuentan como adherencia, no como evidencia.
+- `decideProgression`: SUBIR (todas las series a reps_max con RIR ≥ target, sin bloqueo → +increment_kg) · −10 % (2 sesiones relevantes consecutivas bajo reps_min a la misma carga y mismos objetivos → ×0.9 redondeado al incremento, siempre por debajo de la actual) · MANTENER (resto). STALL = 3 relevantes consecutivas sin progreso → solo flag; `buildStallAlert` arma la Alert para el informe. Nada cambia ejercicio, rango, volumen ni programa.
+- `completeSession`: único lugar donde `rotation_cursor` avanza (test de arquitectura). Idempotente (sesión ya completada no avanza). Abandonar/cancelar no avanzan. Short/minimal completadas avanzan igual. Plantilla que no corresponde al cursor: se cierra la sesión, el cursor no se mueve.
+- `suggestSessionVersion` / `resolveSessionVersion`: sueño < 6 h o time_mode short → corta; time_mode minimal → mínima. Recomendar ≠ aplicar: el usuario decide.
+`domain/substitution` (único punto que importa `domain/catalog`): `substituteOptions` (solo compatibles con el perfil; orden calidad → compatible → lateralidad → menor cambio de complejidad; sin functional_rating) y `recordSubstitution` (se guarda en `WorkoutSession.substitutions`; bloquea la progresión de original y sustituto en esa sesión; no toca plantilla ni programa).

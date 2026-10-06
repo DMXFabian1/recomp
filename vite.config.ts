@@ -17,6 +17,7 @@ export default defineConfig({
       '@repo': fileURLToPath(new URL('./src/repo', import.meta.url)),
       '@infra': fileURLToPath(new URL('./src/infra', import.meta.url)),
       '@ui': fileURLToPath(new URL('./src/ui', import.meta.url)),
+      '@test': fileURLToPath(new URL('./src/test', import.meta.url)),
     },
   },
   plugins: [

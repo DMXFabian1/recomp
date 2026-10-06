@@ -201,6 +201,10 @@ export const workoutSessionSchema = B.extend({
   version: z.enum(['full', 'short', 'minimal']),
   time_mode: positiveInt.optional(),
   sleep_short_suggested: z.boolean(),
+  substitutions: z.array(z.object({
+    original_exercise_id: idSchema, substitute_exercise_id: idSchema,
+    reason: z.enum(['equipment', 'pain', 'preference', 'other']).optional(),
+  }).refine(s => s.original_exercise_id !== s.substitute_exercise_id, { message: 'Un ejercicio no puede sustituirse a sí mismo' })).optional(),
   duration_s: nonNegativeInt.optional(),
   tonnage_kg: nonNegative.optional(),
   note: z.string().optional(),

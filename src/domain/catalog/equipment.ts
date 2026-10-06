@@ -40,7 +40,10 @@ export interface SubstituteOption {
 /**
  * Orden determinista de sustitutos para la hoja [SUSTITUIR]:
  * calidad (high→low) · compatible antes que incompatible · misma lateralidad que el original ·
- * menor complejidad. `functional_rating` NO participa (es solo descriptivo).
+ * menor CAMBIO de complejidad respecto al original (|complejidad − original|).
+ * `functional_rating` NO participa (es solo descriptivo).
+ * La lateralidad y complejidad del original se toman de su propio miembro del grupo cuando existe;
+ * `originalUnilateral` es el respaldo si el original no está en el grupo.
  */
 export function orderedSubstitutes(
   group: ExerciseSubstitutionGroup,
@@ -49,14 +52,19 @@ export function orderedSubstitutes(
   profile: EquipmentProfile,
 ): SubstituteOption[] {
   const have = new Set<EquipmentItem>([...profile.items, 'bodyweight'])
+  const original = group.members.find(m => m.exercise_id === originalExerciseId)
+  const origUni = original?.unilateral ?? originalUnilateral
+  const origCx = original?.complexity
+  const cxDelta = (m: SubstitutionMember) => (origCx === undefined ? m.complexity : Math.abs(m.complexity - origCx))
   return group.members
     .filter(m => m.exercise_id !== originalExerciseId)
     .map(member => ({ member, compatible: member.equipment.every(i => have.has(i)) }))
     .sort((a, b) =>
       QUALITY_ORDER[a.member.quality] - QUALITY_ORDER[b.member.quality]
       || Number(b.compatible) - Number(a.compatible)
-      || Number(a.member.unilateral !== originalUnilateral) - Number(b.member.unilateral !== originalUnilateral)
-      || a.member.complexity - b.member.complexity,
+      || Number(a.member.unilateral !== origUni) - Number(b.member.unilateral !== origUni)
+      || cxDelta(a.member) - cxDelta(b.member)
+      || a.member.exercise_id.localeCompare(b.member.exercise_id),
     )
 }
 
