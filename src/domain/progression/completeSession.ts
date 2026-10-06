@@ -3,19 +3,18 @@
  * arquitectura: ninguna otra ruta de src/domain ni src/app asigna rotation_cursor).
  * Puro: devuelve copias; no muta program ni session; no lee la hora (finished_at es input).
  *
- * Idempotencia: una sesión ya 'completed' no vuelve a avanzar el cursor (reintento / doble toque).
- * Correspondencia (template_mismatch) — DECISIÓN PENDIENTE DE DANY (revisión 8.4, punto 3):
- *   Hoy: solo avanza si session.template_id === rotation[cursor]; si no coincide, la sesión se cierra (es un
- *   registro real, nunca se pierde) pero el cursor NO se mueve y se reporta reason 'template_mismatch'.
- *   Casos que hoy caen en el mismo reason y que conceptualmente son distintos:
- *     a) reintento / sesión corrupta: template_id no existe en la rotación (o el programa cambió) → no avanzar es correcto;
- *     b) el usuario completó de verdad OTRA plantilla de la rotación (p. ej. Torso A cuando tocaba Pierna A).
- *   Para (b) el cursor, entendido como "secuencia de sesiones completadas", debería quedar en la plantilla que
- *   SIGUE a la completada (index(template_id) + 1), no congelado. Consecuencias de cambiarlo: se salta la que
- *   tocaba (no se recupera, coherente con "sesión perdida no se recupera"); el contrato SessionCompletionResult
- *   gana un reason nuevo ('advanced_out_of_order') y la UI deberá avisar. No se implementa hasta decisión explícita.
- * Las versiones short/minimal completadas como la sesión que tocaba avanzan igual: no existe "sesión extra".
- * Abandonar o cancelar nunca avanza. No se crean sesiones retroactivas ni ficticias.
+ * Regla conceptual (decisión final 8.4):
+ *   "rotation_cursor representa la siguiente sesión de la rotación después de la última sesión válida realmente completada."
+ *
+ *  - Sesión ya 'completed' → no vuelve a avanzar (reintento / doble toque): idempotente.
+ *  - Sesión no 'open' (abandonada/cancelada) → no avanza.
+ *  - Plantilla == la del cursor → cursor + 1 ('advanced').
+ *  - Plantilla ≠ la del cursor pero PERTENECE a la rotación → sesión válida completada fuera de orden:
+ *    cursor = índice de esa plantilla + 1 ('advanced_out_of_order'); la que tocaba se considera perdida
+ *    (skipped_template_id): no se recupera, no se inserta, no se crea retroactiva.
+ *  - Plantilla NO pertenece a la rotación → inconsistencia: la sesión se cierra (registro real) pero el cursor
+ *    no se mueve ('template_mismatch').
+ *  - Las versiones short/minimal completadas avanzan igual: no existe "sesión extra".
  */
 import type { Program, WorkoutSession } from '@domain/entities'
 import type { SessionCompletionInput, SessionCompletionResult } from './types'
@@ -24,21 +23,25 @@ export function completeSession(input: SessionCompletionInput): SessionCompletio
   const { program, session, finished_at } = input
   const prev = program.rotation_cursor
   const length = program.rotation.length
-  const expectedTemplate = length > 0 ? program.rotation[((prev % length) + length) % length] : undefined
+  const expectedIndex = length > 0 ? ((prev % length) + length) % length : -1
+  const noAdvance = (reason: SessionCompletionResult['reason'], s: WorkoutSession): SessionCompletionResult =>
+    ({ program, session: s, previous_rotation_cursor: prev, next_rotation_cursor: prev, advanced: false, reason })
 
-  if (session.status === 'completed') {
-    return { program, session, previous_rotation_cursor: prev, next_rotation_cursor: prev, advanced: false, reason: 'already_completed' }
-  }
-  if (session.status !== 'open') {
-    return { program, session, previous_rotation_cursor: prev, next_rotation_cursor: prev, advanced: false, reason: 'not_open' }
-  }
+  if (session.status === 'completed') return noAdvance('already_completed', session)
+  if (session.status !== 'open') return noAdvance('not_open', session)
+
   const closed: WorkoutSession = { ...session, status: 'completed', finished_at, updated_at: finished_at }
-  if (session.template_id !== expectedTemplate) {
-    return { program, session: closed, previous_rotation_cursor: prev, next_rotation_cursor: prev, advanced: false, reason: 'template_mismatch' }
-  }
-  const next = (prev + 1) % length
+  const doneIndex = program.rotation.indexOf(session.template_id)
+  if (length === 0 || doneIndex === -1) return noAdvance('template_mismatch', closed)
+
+  const next = (doneIndex + 1) % length
   const advancedProgram: Program = { ...program, rotation_cursor: next, updated_at: finished_at }
-  return { program: advancedProgram, session: closed, previous_rotation_cursor: prev, next_rotation_cursor: next, advanced: true, reason: 'advanced' }
+  const inOrder = doneIndex === expectedIndex
+  return {
+    program: advancedProgram, session: closed, previous_rotation_cursor: prev, next_rotation_cursor: next, advanced: true,
+    reason: inOrder ? 'advanced' : 'advanced_out_of_order',
+    ...(inOrder ? {} : { skipped_template_id: program.rotation[expectedIndex]! }),
+  }
 }
 
 /** Abandonar: cierra la sesión como 'abandoned'. El programa vuelve intacto (misma referencia). */

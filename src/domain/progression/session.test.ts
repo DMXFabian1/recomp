@@ -74,12 +74,38 @@ describe('completeSession: único avance del cursor', () => {
     }
   })
 
-  it('plantilla que no corresponde al cursor: la sesión se cierra pero el cursor no se mueve', () => {
-    const r = completeSession({ program: createProgramFixture(0), session: createSessionFixture({ template_id: 'test_tpl_upper_b' }), finished_at: AT, today: '2001-03-01' })
+  it('otra plantilla VÁLIDA de la rotación (fuera de orden): cursor = la siguiente a la completada; la que tocaba se pierde', () => {
+    // tocaba Pierna A (0); hizo Torso A (1) → cursor 2 (Pierna B); Pierna A perdida
+    const r = completeSession({ program: createProgramFixture(0), session: createSessionFixture({ template_id: 'test_tpl_upper_a' }), finished_at: AT, today: '2001-03-01' })
+    expect(r.advanced).toBe(true)
+    expect(r.reason).toBe('advanced_out_of_order')
+    expect(r.next_rotation_cursor).toBe(2)
+    expect(r.skipped_template_id).toBe('test_tpl_leg_a')
+    expect(r.session.status).toBe('completed')
+    expect(getToday({ today: '2001-03-02', effective_from: '2001-01-01', program: r.program, templates: TEMPLATES, sessions: [r.session] }).template?.name).toBe('Pierna B')
+    // tocaba Torso B (3); hizo Pierna A (0) → cursor 1 (Torso A), con wrap
+    const r2 = completeSession({ program: createProgramFixture(3), session: createSessionFixture({ template_id: 'test_tpl_leg_a' }), finished_at: AT, today: '2001-03-01' })
+    expect(r2.next_rotation_cursor).toBe(1)
+    expect(r2.skipped_template_id).toBe('test_tpl_upper_b')
+    // la perdida no se recupera: no aparece ninguna sesión nueva, solo la cerrada
+    expect(Object.keys(r).sort()).toEqual(['advanced', 'next_rotation_cursor', 'previous_rotation_cursor', 'program', 'reason', 'session', 'skipped_template_id'])
+  })
+
+  it('fuera de orden es idempotente: completar dos veces no vuelve a mover el cursor', () => {
+    const r1 = completeSession({ program: createProgramFixture(0), session: createSessionFixture({ template_id: 'test_tpl_leg_b' }), finished_at: AT, today: '2001-03-01' })
+    const r2 = completeSession({ program: r1.program, session: r1.session, finished_at: AT, today: '2001-03-01' })
+    expect(r1.next_rotation_cursor).toBe(3)
+    expect(r2.reason).toBe('already_completed')
+    expect(r2.program.rotation_cursor).toBe(3)
+  })
+
+  it('plantilla que NO pertenece a la rotación (inconsistencia): la sesión se cierra pero el cursor no se mueve', () => {
+    const r = completeSession({ program: createProgramFixture(0), session: createSessionFixture({ template_id: 'test_tpl_desconocida' }), finished_at: AT, today: '2001-03-01' })
     expect(r.advanced).toBe(false)
     expect(r.reason).toBe('template_mismatch')
     expect(r.program.rotation_cursor).toBe(0)
     expect(r.session.status).toBe('completed')
+    expect(r.skipped_template_id).toBeUndefined()
   })
 
   it('sesión perdida: sin entrenar no hay sesión, el cursor no cambia y la siguiente sigue desde el cursor', () => {

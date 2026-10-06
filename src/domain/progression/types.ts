@@ -90,7 +90,15 @@ export interface SessionCompletionResult {
   previous_rotation_cursor: number
   next_rotation_cursor: number
   advanced: boolean
-  reason: 'advanced' | 'already_completed' | 'template_mismatch' | 'not_open'
+  /**
+   * advanced: la plantilla del cursor se completó.
+   * advanced_out_of_order: se completó OTRA plantilla válida de la rotación; el cursor queda en la siguiente a esa;
+   *   la que tocaba se considera perdida (no se recupera, no se inserta, no hay retroactiva). La UI de 8.6 avisa.
+   * template_mismatch: la plantilla no pertenece a la rotación (inconsistencia); la sesión se cierra, el cursor no se mueve.
+   */
+  reason: 'advanced' | 'advanced_out_of_order' | 'already_completed' | 'template_mismatch' | 'not_open'
+  /** Plantilla que tocaba y se dio por perdida (solo en advanced_out_of_order). */
+  skipped_template_id?: string
 }
 
 export type SessionVersionReason = 'sleep_short' | 'time_mode_short' | 'time_mode_minimal' | 'none'
