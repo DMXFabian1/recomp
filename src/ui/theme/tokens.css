@@ -1,0 +1,38 @@
+/* Tokens de diseño (Fase 7). Claro por defecto; oscuro por sistema o por data-theme. */
+@import '@fontsource/barlow/400.css';
+@import '@fontsource/barlow/500.css';
+@import '@fontsource/barlow/600.css';
+@import '@fontsource/barlow-condensed/600.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+:root {
+  --bg: #f3f4f1;
+  --surface: #ffffff;
+  --ink: #1b2430;
+  --muted: #5d6876;
+  --line: #d9ddd6;
+  --accent: #1f5fbf;
+  --accent-soft: #e3ecfa;
+  --ok: #2e7d4f;
+  --warn: #b26a00;
+  --crit: #b3362c;
+  --f-display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --f-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --r-card: 12px;
+  --r-btn: 9px;
+  --r-input: 8px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #12171d; --surface: #1a2129; --ink: #e7ebe4; --muted: #9aa4b0; --line: #2c3540;
+    --accent: #6ea0ec; --accent-soft: #1f2c40; --ok: #5fbf86; --warn: #e0a24a; --crit: #e2766c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #12171d; --surface: #1a2129; --ink: #e7ebe4; --muted: #9aa4b0; --line: #2c3540;
+  --accent: #6ea0ec; --accent-soft: #1f2c40; --ok: #5fbf86; --warn: #e0a24a; --crit: #e2766c;
+  color-scheme: dark;
+}
