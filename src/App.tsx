@@ -4,6 +4,7 @@ import { Diagnostics } from '@ui/screens/Diagnostics'
 import { Ahora } from '@ui/screens/Ahora'
 import { Entrenar } from '@ui/screens/Entrenar'
 import { Comida } from '@ui/screens/Comida'
+import { Progreso } from '@ui/screens/Progreso'
 
 type Tab = 'now' | 'training' | 'meals' | 'progress' | 'more'
 
@@ -27,12 +28,14 @@ export default function App() {
           <Entrenar key={tab} onGoNow={() => setTab('now')} />
         ) : tab === 'meals' ? (
           <Comida key={tab} />
+        ) : tab === 'progress' ? (
+          <Progreso key={tab} />
         ) : tab === 'more' ? (
           <Diagnostics />
         ) : (
           <>
             <div className="eyebrow">{TABS.find(t => t.id === tab)?.label}</div>
-            <p className="muted">Pendiente de la fase 8.8.</p>
+            <p className="muted">Pendiente.</p>
           </>
         )}
       </main>

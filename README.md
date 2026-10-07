@@ -70,7 +70,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.5 AHORA (check-in parcial, qué toca hoy vía getToday, ayer con adherencia ≠ proteína, acción dominante, No tengo tiempo, Me salí, día irregular)
 - [x] 8.6 Entrenamiento (series, evaluación/progresión visibles, sustitución, completar/abandonar/cancelar, aviso fuera de orden, cardio/remo, prueba mensual)
 - [x] 8.7 Comida (plan del día, Comí esto, sustituir/adaptar, Me salí, emergencia, omitir, proteína del día, inventario, lista de compras, edición de alimentos)
-- [ ] 8.8 Progreso
+- [x] 8.8 Progreso (cuerpo, fuerza, cardio, hábitos, metas; fotos locales; sin interpretación)
 - [ ] 8.9 Reglas de ajuste
 - [ ] 8.10 Backup / Import / Export
 - [ ] 8.11 Coach report
@@ -119,3 +119,10 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - Servicios: `nutrition.ts` (`loadDayFood`, `logMeal` planned/substituted/adapted/emergency/skipped en transacción, inventario descontado solo al crear el registro), `meals.ts` (Me salí ahora guarda nota), `inventory.ts`, `shopping.ts`, `food.ts` (edición con Zod; `source: 'user'`; sin proteína o kcal → `missing`).
 - Cambio de esquema aditivo: `MealLog.note?: string` (Zod actualizado; sin migración; SCHEMA_VERSION sigue en 2).
 - Mutant ISO sigue sin macros (`missing`) hasta que Dany capture la etiqueta en Alimentos.
+
+## Progreso (Fase 8.8)
+
+- Descriptivo: cifras, fechas y gráficas SVG monocromas; nunca juicios ni recomendaciones (eso es 8.9).
+- `domain/metrics/`: peso (serie real, promedio 7 d con ≥4 registros reales de la ventana, promedio anterior, pendiente kg/semana por mínimos cuadrados con ≥4 puntos y ≥7 días), cuerpo (cintura, BIA tal cual), fuerza (solo sesiones `completed`; series de trabajo válidas; tonelaje Σ peso × reps; historial de los 4 key lifts por su id real, sin mezclar sustituciones), cardio (semanas lunes–domingo; comparación de pruebas mensuales con deltas), hábitos (adherencia declarada y proteína estimada en columnas separadas; sueño por tramos sin media inventada; pasos; 1–5), metas (meta vs real; kg derivados de baseline solo si existe).
+- `app/services/progress.ts` (`loadProgress` con periodo 7/30/todo; `logWaist`, `logBia`), `app/services/photos.ts` (Blob + miniatura en IndexedDB, una por mes y vista, reemplazo y borrado físico; sin red).
+- UI `Progreso.tsx`: Cuerpo (peso, cintura, BIA, fotos con cámara/archivo y vista previa por object URL revocada), Fuerza, Cardio, Hábitos, Metas. "Sin datos suficientes" explícito; sin interpolación.
