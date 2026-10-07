@@ -69,7 +69,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.4 Training engine (doble progresión, −10 %, estancamiento, finalización de sesión, versión corta/mínima, sustitución)
 - [x] 8.5 AHORA (check-in parcial, qué toca hoy vía getToday, ayer con adherencia ≠ proteína, acción dominante, No tengo tiempo, Me salí, día irregular)
 - [x] 8.6 Entrenamiento (series, evaluación/progresión visibles, sustitución, completar/abandonar/cancelar, aviso fuera de orden, cardio/remo, prueba mensual)
-- [ ] 8.7 Comida
+- [x] 8.7 Comida (plan del día, Comí esto, sustituir/adaptar, Me salí, emergencia, omitir, proteína del día, inventario, lista de compras, edición de alimentos)
 - [ ] 8.8 Progreso
 - [ ] 8.9 Reglas de ajuste
 - [ ] 8.10 Backup / Import / Export
@@ -111,3 +111,11 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - `app/services/cardio.ts`: `logCardio` (presets z2 20/25/30, intervalos 6×1/8×1; RPE 1–10; sin zonas por pulso) y `logMonthlyTest` (10 min, una por mes, split derivado, reemplazo explícito).
 - UI `ui/screens/Entrenar.tsx`: navegación por ejercicio, "Hoy: subir/mantener/bajar/bloqueada/sin datos" con detalle de última vez, tabla de series (calentamientos marcados), registro rápido (kg, reps, RIR, calentamiento, dolor, técnica), sustitución, completar → resumen con decisión por ejercicio y advertencia de fuera de orden; sin sesión: iniciar (hoja compartida con AHORA) + cardio/remo + prueba mensual.
 - Corrección necesaria en infra: `DexieRepository.getLive`/`softDelete` devuelven promesas Dexie (antes `async` nativo cerraba transacciones largas con PrematureCommitError).
+
+## Comida (Fase 8.7)
+
+- Cuatro estados que nunca se mezclan: PLANIFICADO (MealPlan/Recipe), CONSUMIDO (MealLog), ESTIMADO (cifras con ≈ o "sin dato"; `null` ≠ 0) y RECOMENDADO (adaptación propuesta por inventario, no persistida hasta registrar).
+- Dominio: `nutrition/estimate.ts` (única estimación de receta; `protein.ts` la reutiliza), `nutrition/today.ts` (consumida / objetivo 180 / mínimo 160 / restante; cota inferior explícita), `inventory/status.ts` (>2 / ≤2 / ≤0; consumo solo de alimentos con inventario), `inventory/adapt.ts` (solo FoodEquivalent registrados y solo si el inventario dice que falta), `shopping/needs.ts` (necesario = plan semanal × horizonte de tienda × (1 + reserva) − inventario; Costco 30 / súper 14 / mercado 7).
+- Servicios: `nutrition.ts` (`loadDayFood`, `logMeal` planned/substituted/adapted/emergency/skipped en transacción, inventario descontado solo al crear el registro), `meals.ts` (Me salí ahora guarda nota), `inventory.ts`, `shopping.ts`, `food.ts` (edición con Zod; `source: 'user'`; sin proteína o kcal → `missing`).
+- Cambio de esquema aditivo: `MealLog.note?: string` (Zod actualizado; sin migración; SCHEMA_VERSION sigue en 2).
+- Mutant ISO sigue sin macros (`missing`) hasta que Dany capture la etiqueta en Alimentos.

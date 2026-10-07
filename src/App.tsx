@@ -3,6 +3,7 @@ import { Activity, Dumbbell, LineChart, MoreHorizontal, UtensilsCrossed } from '
 import { Diagnostics } from '@ui/screens/Diagnostics'
 import { Ahora } from '@ui/screens/Ahora'
 import { Entrenar } from '@ui/screens/Entrenar'
+import { Comida } from '@ui/screens/Comida'
 
 type Tab = 'now' | 'training' | 'meals' | 'progress' | 'more'
 
@@ -24,12 +25,14 @@ export default function App() {
           <Ahora key={tab} onGoTraining={() => setTab('training')} />
         ) : tab === 'training' ? (
           <Entrenar key={tab} onGoNow={() => setTab('now')} />
+        ) : tab === 'meals' ? (
+          <Comida key={tab} />
         ) : tab === 'more' ? (
           <Diagnostics />
         ) : (
           <>
             <div className="eyebrow">{TABS.find(t => t.id === tab)?.label}</div>
-            <p className="muted">Pendiente de la fase correspondiente (8.7–8.8).</p>
+            <p className="muted">Pendiente de la fase 8.8.</p>
           </>
         )}
       </main>

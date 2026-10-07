@@ -310,6 +310,8 @@ export interface MealLog extends BaseEntity {
   est_complete: boolean
   off_plan_protein_g?: number | null // null = "no sé"
   time_mode?: number
+  /** v2.2 (8.7, aditivo): nota breve del usuario ("tacos en la calle"). */
+  note?: string
   logged_at: IsoDateTime
 }
 

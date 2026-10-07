@@ -311,6 +311,7 @@ export const mealLogSchema = B.extend({
   est_complete: z.boolean(),
   off_plan_protein_g: nonNegative.nullable().optional(),
   time_mode: positiveInt.optional(),
+  note: z.string().max(200).optional(),
   logged_at: isoDateTimeSchema,
 }).refine(l => l.status === 'off_plan' || l.status === 'skipped' || l.recipe_id !== undefined,
   { message: 'Una comida del plan, sustituida, adaptada o de emergencia requiere recipe_id', path: ['recipe_id'] }) satisfies z.ZodType<T.MealLog>

@@ -21,6 +21,7 @@ export async function logOffPlan(storage: Storage, input: OffPlanInput, now: str
       date: input.date, slot: input.slot, status: 'off_plan', est_complete: false,
       off_plan_protein_g: input.protein_g, logged_at: now,
       ...(input.protein_g !== null ? { protein_g_est: input.protein_g } : {}),
+      ...(input.note ? { note: input.note } : {}),
     }
     await repos.meal_logs.put(row)
     return row

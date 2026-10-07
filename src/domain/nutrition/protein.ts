@@ -19,6 +19,7 @@
  *    'unknown' (hay comidas desconocidas y la cota inferior no llega al piso: no se fabrica un número).
  */
 import type { Food, MealLog, MealSlot, Recipe } from '@domain/entities'
+import { estimateRecipe, round1 } from './estimate'
 
 export const DEFAULT_PROTEIN_FLOOR_G = 160
 
@@ -47,27 +48,14 @@ export interface ProteinEstimate {
   unknown_meals: number
 }
 
-function round1(n: number): number {
-  return Math.round(n * 10) / 10
-}
-
 function proteinOfRecipe(log: MealLog, recipes: Map<string, Recipe>, foods: Map<string, Food>): { grams: number } | { reason: MealProtein['reason'] } {
   if (!log.recipe_id) return { reason: 'no_recipe' }
   const recipe = recipes.get(log.recipe_id)
   if (!recipe) return { reason: 'no_recipe' }
-  // Sustituciones: reemplazan un alimento de la receta por otro con sus porciones.
-  const items = recipe.items.map(it => {
-    const sub = log.substitutions?.find(s => s.food_id === it.food_id)
-    return sub ? { food_id: sub.substitute_food_id, portions: sub.portions } : it
-  })
-  let total = 0
-  for (const it of items) {
-    const f = foods.get(it.food_id)
-    if (!f) return { reason: 'food_missing' }
-    if (f.protein_g === undefined || f.nutrition_status === 'missing') return { reason: 'food_without_protein' }
-    total += f.protein_g * it.portions
-  }
-  return { grams: total }
+  const est = estimateRecipe(recipe, foods, log.substitutions)
+  if (est.missing_foods.length > 0) return { reason: 'food_missing' }
+  if (est.protein_g === null) return { reason: 'food_without_protein' }
+  return { grams: est.protein_g }
 }
 
 export function calculateEstimatedProtein(data: FoodYesterdayData, floor_g = DEFAULT_PROTEIN_FLOOR_G): ProteinEstimate {
