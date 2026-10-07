@@ -367,6 +367,23 @@ export type RecommendationOrigin = 'rules' | 'claude' | 'progression'
 export type RecommendationType = 'kcal' | 'steps' | 'deload' | 'load' | 'exercise_swap' | 'other'
 export type RecommendationStatus = 'pending' | 'accepted' | 'ignored' | 'auto'
 
+/** 8.9: id de regla de ajuste. Solo las reglas congeladas; `strength_drop` nunca produce Recommendation. */
+export type AdjustmentRuleId =
+  | 'adherence_low' | 'weight_loss_too_fast' | 'strength_drop' | 'hunger_sustained' | 'weight_waist_stable' | 'weight_loss_adequate'
+
+/** 8.9: evidencia estructurada (nunca texto genérico). `observed: null` = sin datos. */
+export interface RecommendationEvidence {
+  rule_id: AdjustmentRuleId
+  metric: string
+  observed: number | null
+  threshold: number | null
+  period_start: DayString
+  period_end: DayString
+}
+
+/** 8.9: cambio propuesto. Solo kcal/steps; load/deload quedan reservados. */
+export interface ProposedChange { type: 'kcal' | 'steps'; delta: number }
+
 export interface Recommendation extends BaseEntity {
   date: DayString
   origin: RecommendationOrigin
@@ -374,6 +391,12 @@ export interface Recommendation extends BaseEntity {
   payload: Record<string, unknown>
   rationale: string
   status: RecommendationStatus
+  /** 8.9 (aditivo, opcional): trazabilidad de reglas. Clave lógica de idempotencia: (rule_id, evaluation_period_end). */
+  rule_id?: AdjustmentRuleId
+  evaluation_period_start?: DayString
+  evaluation_period_end?: DayString
+  evidence?: RecommendationEvidence[]
+  proposed_change?: ProposedChange
 }
 
 export interface RecommendationDecision extends BaseEntity {
@@ -393,7 +416,8 @@ export interface CoachReport extends BaseEntity {
   alert_ids: Id[]
 }
 
-export type AlertType = 'adherence_high' | 'weight_flat' | 'sleep_drop' | 'stall' | 'mood'
+/** 8.9 añade (aditivo) `adherence_low` y `strength_drop`: solo reporte, nunca ajuste. */
+export type AlertType = 'adherence_high' | 'weight_flat' | 'sleep_drop' | 'stall' | 'mood' | 'adherence_low' | 'strength_drop'
 
 export interface Alert extends BaseEntity {
   type: AlertType

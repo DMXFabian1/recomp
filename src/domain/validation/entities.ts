@@ -364,6 +364,8 @@ export const monthlyGoalSchema = B.extend({
 
 const jsonRecord = z.record(z.string(), z.unknown())
 
+const adjustmentRuleIdSchema = z.enum(['adherence_low', 'weight_loss_too_fast', 'strength_drop', 'hunger_sustained', 'weight_waist_stable', 'weight_loss_adequate'])
+
 export const recommendationSchema = B.extend({
   date: dayStringSchema,
   origin: z.enum(['rules', 'claude', 'progression']),
@@ -371,6 +373,15 @@ export const recommendationSchema = B.extend({
   payload: jsonRecord,
   rationale: z.string(),
   status: z.enum(['pending', 'accepted', 'ignored', 'auto']),
+  // 8.9 — aditivo/opcional
+  rule_id: adjustmentRuleIdSchema.optional(),
+  evaluation_period_start: dayStringSchema.optional(),
+  evaluation_period_end: dayStringSchema.optional(),
+  evidence: z.array(z.object({
+    rule_id: adjustmentRuleIdSchema, metric: z.string().min(1), observed: z.number().nullable(), threshold: z.number().nullable(),
+    period_start: dayStringSchema, period_end: dayStringSchema,
+  })).optional(),
+  proposed_change: z.object({ type: z.enum(['kcal', 'steps']), delta: z.number().int() }).optional(),
 }) satisfies z.ZodType<T.Recommendation>
 
 export const recommendationDecisionSchema = B.extend({
@@ -391,7 +402,7 @@ export const coachReportSchema = B.extend({
 }).refine(r => r.period_start <= r.period_end, { message: 'period_start ≤ period_end', path: ['period_end'] }) satisfies z.ZodType<T.CoachReport>
 
 export const alertSchema = B.extend({
-  type: z.enum(['adherence_high', 'weight_flat', 'sleep_drop', 'stall', 'mood']),
+  type: z.enum(['adherence_high', 'weight_flat', 'sleep_drop', 'stall', 'mood', 'adherence_low', 'strength_drop']),
   message: z.string().min(1),
   context: jsonRecord,
   acknowledged_at: isoDateTimeSchema.optional(),

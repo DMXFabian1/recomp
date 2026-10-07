@@ -71,7 +71,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.6 Entrenamiento (series, evaluación/progresión visibles, sustitución, completar/abandonar/cancelar, aviso fuera de orden, cardio/remo, prueba mensual)
 - [x] 8.7 Comida (plan del día, Comí esto, sustituir/adaptar, Me salí, emergencia, omitir, proteína del día, inventario, lista de compras, edición de alimentos)
 - [x] 8.8 Progreso (cuerpo, fuerza, cardio, hábitos, metas; fotos locales; sin interpretación)
-- [ ] 8.9 Reglas de ajuste
+- [x] 8.9 Reglas de ajuste (ventana 14 d, A>B>D>E>F, Recommendation pending → aceptar/ignorar; C/sueño/ánimo solo Alert)
 - [ ] 8.10 Backup / Import / Export
 - [ ] 8.11 Coach report
 
@@ -126,3 +126,10 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - `domain/metrics/`: peso (serie real, promedio 7 d con ≥4 registros reales de la ventana, promedio anterior, pendiente kg/semana por mínimos cuadrados con ≥4 puntos y ≥7 días), cuerpo (cintura, BIA tal cual), fuerza (solo sesiones `completed`; series de trabajo válidas; tonelaje Σ peso × reps; historial de los 4 key lifts por su id real, sin mezclar sustituciones), cardio (semanas lunes–domingo; comparación de pruebas mensuales con deltas), hábitos (adherencia declarada y proteína estimada en columnas separadas; sueño por tramos sin media inventada; pasos; 1–5), metas (meta vs real; kg derivados de baseline solo si existe).
 - `app/services/progress.ts` (`loadProgress` con periodo 7/30/todo; `logWaist`, `logBia`), `app/services/photos.ts` (Blob + miniatura en IndexedDB, una por mes y vista, reemplazo y borrado físico; sin red).
 - UI `Progreso.tsx`: Cuerpo (peso, cintura, BIA, fotos con cámara/archivo y vista previa por object URL revocada), Fuerza, Cardio, Hábitos, Metas. "Sin datos suficientes" explícito; sin interpolación.
+
+## Reglas de ajuste (Fase 8.9)
+- `domain/adjustments/`: `window` (14 días cerrados desde `effective_from` de los Settings vigentes; `end < hoy`; solo la última completa), `inputs` (missing ≠ zero; reutiliza métricas 8.8), `rules` (A–F puras), `evaluate` (prioridad A > B > D > E > F; máximo UNA Recommendation; C solo Alert), `alerts`, `decision` (aceptar/ignorar puros).
+- `app/services/adjustments.ts`: `evaluateAdjustmentWindow` (idempotente por `(rule_id, evaluation_period_end)`; nunca crea si hay pending; nunca escribe Settings), `acceptRecommendation` (transacción: Decision + accepted + Settings nueva `change_origin:'recommendation'`, `effective_from = hoy`), `ignoreRecommendation` (Settings intacto); segundo intento → `already_decided`.
+- `Recommendation` gana campos opcionales aditivos (`rule_id`, `evaluation_period_*`, `evidence[]`, `proposed_change`); `AlertType` añade `adherence_low` y `strength_drop`. Sin cambio de `SCHEMA_VERSION`, índices, backup ni migraciones.
+- `load`/`deload` reservados: no se emiten.
+- UI: bloque secundario en MÁS (`AdjustmentPanel`) con qué/por qué/evidencia/qué cambia/qué no cambia y [ACEPTAR CAMBIO] [IGNORAR].

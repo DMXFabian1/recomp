@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { StorageInfo } from '@repo/index'
 import { APP_VERSION } from '@domain/backup/schema'
 import { useApp } from '../AppContext'
+import { AdjustmentPanel } from '../components/AdjustmentPanel'
 
 const fmtMB = (b?: number) => (b === undefined ? '—' : `${(b / 1048576).toFixed(1)} MB`)
 
@@ -19,8 +20,9 @@ export function Diagnostics() {
 
   return (
     <>
-      <div className="eyebrow">Diagnóstico</div>
-      <h1>Almacenamiento</h1>
+      <div className="eyebrow">Más</div>
+      <h1>Ajustes y diagnóstico</h1>
+      <AdjustmentPanel />
       {err && <div className="banner">No se puede leer el estado: {err}</div>}
       <div className="card">
         <div className="big">{info ? `v${info.schema_version}` : '…'}</div>
