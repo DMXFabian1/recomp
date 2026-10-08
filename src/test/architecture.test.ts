@@ -32,7 +32,7 @@ function importsOf(file: string): string[] {
 const layerOf = (file: string) => relative(SRC, file).split(/[\\/]/)[0] ?? ''
 const targetLayer = (imp: string) => {
   // Reglas de dominio: la UI solo las usa a través de app/services (Fase 8.5).
-  if (/^@domain\/(progression|rotation|nutrition|substitution|catalog|adherence|metrics|adjustments)\b/.test(imp)) return 'domain-rules'
+  if (/^@domain\/(progression|rotation|nutrition|substitution|catalog|adherence|metrics|adjustments|report)\b/.test(imp)) return 'domain-rules'
   const alias = imp.match(/^@(domain|app|repo|infra|ui)\b/)
   if (alias) return alias[1]!
   if (imp === 'dexie' || imp.startsWith('dexie/')) return 'dexie'
@@ -74,7 +74,7 @@ describe('arquitectura por capas', () => {
  * Ningún módulo de reglas (progression, rotation, adherence, metrics, adjustments) puede importarlo,
  * ni ahora ni cuando existan. Se comprueba sobre todo lo que haya bajo domain/.
  */
-const RULE_MODULES = ['progression', 'rotation', 'adherence', 'metrics', 'adjustments', 'nutrition']
+const RULE_MODULES = ['progression', 'rotation', 'adherence', 'metrics', 'adjustments', 'nutrition', 'report']
 describe('el motor de reglas no depende del catálogo', () => {
   const domainFiles = walk(join(SRC, 'domain'))
   it('existe al menos un módulo de catálogo que proteger', () => {

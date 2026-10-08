@@ -71,6 +71,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.6 Entrenamiento (series, evaluación/progresión visibles, sustitución, completar/abandonar/cancelar, aviso fuera de orden, cardio/remo, prueba mensual)
 - [x] 8.7 Comida (plan del día, Comí esto, sustituir/adaptar, Me salí, emergencia, omitir, proteína del día, inventario, lista de compras, edición de alimentos)
 - [x] 8.8 Progreso (cuerpo, fuerza, cardio, hábitos, metas; fotos locales; sin interpretación)
+- [x] 8.10 Reporte quincenal para Claude (CoachReport bajo demanda, solo lectura, copiar texto)
 - [x] 8.9 Reglas de ajuste (ventana 14 d, A>B>D>E>F, Recommendation pending → aceptar/ignorar; C/sueño/ánimo solo Alert)
 - [ ] 8.10 Backup / Import / Export
 - [ ] 8.11 Coach report
@@ -133,3 +134,10 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - `Recommendation` gana campos opcionales aditivos (`rule_id`, `evaluation_period_*`, `evidence[]`, `proposed_change`); `AlertType` añade `adherence_low` y `strength_drop`. Sin cambio de `SCHEMA_VERSION`, índices, backup ni migraciones.
 - `load`/`deload` reservados: no se emiten.
 - UI: bloque secundario en MÁS (`AdjustmentPanel`) con qué/por qué/evidencia/qué cambia/qué no cambia y [ACEPTAR CAMBIO] [IGNORAR].
+
+## Reporte quincenal (Fase 8.10)
+- `domain/report/`: `buildCoachReport` (pura, determinista) y `renderCoachReportText` (texto estable `CLAVE: valor` con instrucciones para Claude). Reutiliza la ventana de 8.9 (`evaluationWindow`), `buildInputs` (peso %/sem, adherencia, cintura, fuerza comparada) y las métricas de 8.8.
+- Periodo: última ventana cerrada; si no hay, la ventana en curso hasta ayer (`partial`); si los Settings cambiaron hoy, `empty`.
+- `app/services/report.ts`: `loadCoachReport` solo lee (sin transacción de escritura, sin red, sin fotos). No se persiste: no se usa la colección `coach_reports`.
+- UI: bloque "Reporte quincenal" en MÁS con resumen, [VER REPORTE] y [COPIAR PARA CLAUDE] (Clipboard API; si falla, textarea seleccionable). Se regenera cuando el panel de ajustes termina de evaluar o se decide una recomendación.
+- `null` siempre se escribe `no_data`; MISSING_DATA lista lo que falta (incluye Mutant ISO sin macros, talk test y fuera de orden no registrados).

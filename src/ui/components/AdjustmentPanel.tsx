@@ -13,7 +13,8 @@ import { RULE_LABEL, METRIC_LABEL } from '../labels'
 const fmtDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })
 const sign = (n: number) => (n > 0 ? `+${n}` : `${n}`)
 
-export function AdjustmentPanel() {
+/** `onSettled`: avisa cuando la evaluación o una decisión terminaron de escribir (8.10: el reporte se regenera). */
+export function AdjustmentPanel({ onSettled }: { onSettled?: () => void } = {}) {
   const { storage } = useApp()
   const [today] = useState(() => localDay(new Date()))
   const [report, setReport] = useState<EvaluationReport | null>(null)
@@ -24,9 +25,9 @@ export function AdjustmentPanel() {
   const refresh = useCallback(() => {
     evaluateAdjustmentWindow(storage, today, new Date().toISOString())
       .then(r => { setReport(r); return loadPendingRecommendation(storage) })
-      .then(setPending)
+      .then(p => { setPending(p); onSettled?.() })
       .catch((e: unknown) => setMsg(isAppError(e) ? e.message : 'No se pudo evaluar.'))
-  }, [storage, today])
+  }, [storage, today, onSettled])
   useEffect(() => { refresh() }, [refresh])
 
   const decide = (kind: 'accept' | 'ignore') => {

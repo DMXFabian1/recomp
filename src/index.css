@@ -116,3 +116,8 @@ h1 { font: 600 20px var(--f-body); margin: 0; }
 .photo-actions { display: flex; gap: 10px; align-items: center; min-height: 20px; }
 .photo-view { position: fixed; inset: 0; background: var(--bg); z-index: 10; display: flex; flex-direction: column; gap: 8px; padding: 16px; }
 .photo-view img { flex: 1; min-height: 0; object-fit: contain; width: 100%; }
+
+/* 8.10 — reporte quincenal */
+.report { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.report h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; margin: 10px 0 0; color: var(--muted, inherit); }
+ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }

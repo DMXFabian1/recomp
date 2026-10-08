@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { StorageInfo } from '@repo/index'
 import { APP_VERSION } from '@domain/backup/schema'
 import { useApp } from '../AppContext'
 import { AdjustmentPanel } from '../components/AdjustmentPanel'
+import { CoachReportPanel } from '../components/CoachReportPanel'
 
 const fmtMB = (b?: number) => (b === undefined ? '—' : `${(b / 1048576).toFixed(1)} MB`)
 
@@ -11,6 +12,8 @@ export function Diagnostics() {
   const { storage, migratedFrom, seed } = useApp()
   const [info, setInfo] = useState<StorageInfo | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const [rev, setRev] = useState(0)
+  const bump = useCallback(() => setRev(r => r + 1), [])
 
   useEffect(() => {
     storage.info().then(setInfo).catch((e: unknown) => setErr(e instanceof Error ? e.message : String(e)))
@@ -22,7 +25,8 @@ export function Diagnostics() {
     <>
       <div className="eyebrow">Más</div>
       <h1>Ajustes y diagnóstico</h1>
-      <AdjustmentPanel />
+      <AdjustmentPanel onSettled={bump} />
+      <CoachReportPanel refreshKey={rev} />
       {err && <div className="banner">No se puede leer el estado: {err}</div>}
       <div className="card">
         <div className="big">{info ? `v${info.schema_version}` : '…'}</div>
