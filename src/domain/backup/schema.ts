@@ -16,5 +16,28 @@ export interface BackupFile {
   exported_at: string
   device_id: string
   collections: Record<string, unknown[]>
-  photos?: Array<{ id: string; mime: string; data_base64: string; thumb_base64: string }>
+  photos?: BackupPhoto[]
+}
+
+/**
+ * Foto dentro del backup (8.11). La metadata es OBLIGATORIA para poder restaurar la entidad ProgressPhoto completa:
+ * sin date/month/view/width/height/bytes/thumb_mime, la foto no se puede reconstruir y el backup se rechaza.
+ * Cambio aditivo del envelope: SCHEMA_VERSION sigue en 2 (nunca se exportaron fotos antes de 8.11).
+ */
+export interface BackupPhoto {
+  id: string
+  mime: string
+  data_base64: string
+  thumb_base64: string
+  thumb_mime: string
+  date: string
+  month: string
+  view: 'front' | 'side' | 'back'
+  width: number
+  height: number
+  bytes: number
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+  source: 'user' | 'shortcut' | 'system' | 'import'
 }

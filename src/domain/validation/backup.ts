@@ -13,7 +13,7 @@ import { z } from 'zod'
 import { COLLECTIONS, type CollectionName } from '@domain/entities'
 import { SCHEMA_VERSION, type BackupFile } from '@domain/backup/schema'
 import { ENTITY_SCHEMAS, type ValidationIssue, type ValidationResult } from './entities'
-import { isoDateTimeSchema } from './primitives'
+import { dayStringSchema, isoDateTimeSchema, monthStringSchema } from './primitives'
 
 /** Colecciones que nunca viajan dentro de `collections`: las fotos van en `photos`; los backups no se anidan. */
 export const BACKUP_EXCLUDED: ReadonlySet<CollectionName> = new Set<CollectionName>(['progress_photos', 'backups'])
@@ -24,8 +24,12 @@ export const backupEnvelopeSchema = z.object({
   exported_at: isoDateTimeSchema,
   device_id: z.string().min(1),
   collections: z.record(z.string(), z.array(z.unknown())),
+  // 8.11: metadata completa obligatoria (sin ella la foto no se puede restaurar).
   photos: z.array(z.object({
     id: z.string().min(1), mime: z.string().min(1), data_base64: z.string(), thumb_base64: z.string(),
+    thumb_mime: z.string().min(1), date: dayStringSchema, month: monthStringSchema, view: z.enum(['front', 'side', 'back']),
+    width: z.number().int().positive(), height: z.number().int().positive(), bytes: z.number().int().nonnegative(),
+    created_at: isoDateTimeSchema, updated_at: isoDateTimeSchema, deleted_at: isoDateTimeSchema.optional(), source: z.enum(['user', 'shortcut', 'system', 'import']),
   })).optional(),
 })
 

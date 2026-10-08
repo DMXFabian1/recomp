@@ -71,6 +71,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.6 Entrenamiento (series, evaluación/progresión visibles, sustitución, completar/abandonar/cancelar, aviso fuera de orden, cardio/remo, prueba mensual)
 - [x] 8.7 Comida (plan del día, Comí esto, sustituir/adaptar, Me salí, emergencia, omitir, proteína del día, inventario, lista de compras, edición de alimentos)
 - [x] 8.8 Progreso (cuerpo, fuerza, cardio, hábitos, metas; fotos locales; sin interpretación)
+- [x] 8.11 Backup e importación desde UI (export completo con fotos, import validado, atómico, con backup preventivo y rollback)
 - [x] 8.10 Reporte quincenal para Claude (CoachReport bajo demanda, solo lectura, copiar texto)
 - [x] 8.9 Reglas de ajuste (ventana 14 d, A>B>D>E>F, Recommendation pending → aceptar/ignorar; C/sueño/ánimo solo Alert)
 - [ ] 8.10 Backup / Import / Export
@@ -141,3 +142,10 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - `app/services/report.ts`: `loadCoachReport` solo lee (sin transacción de escritura, sin red, sin fotos). No se persiste: no se usa la colección `coach_reports`.
 - UI: bloque "Reporte quincenal" en MÁS con resumen, [VER REPORTE] y [COPIAR PARA CLAUDE] (Clipboard API; si falla, textarea seleccionable). Se regenera cuando el panel de ajustes termina de evaluar o se decide una recomendación.
 - `null` siempre se escribe `no_data`; MISSING_DATA lista lo que falta (incluye Mutant ISO sin macros, talk test y fuera de orden no registrados).
+
+## Backup e importación (Fase 8.11)
+- Formato existente (`BackupFile`, `schema_version` 2). `photos[]` lleva ahora metadata OBLIGATORIA (date, month, view, width, height, bytes, thumb_mime, created_at, updated_at, source) además de los binarios en base64: una foto sin metadata se rechaza. `Backup.kind` añade `auto_pre_import`. Cambios aditivos: sin subir versión, sin índices ni migraciones nuevas.
+- `domain/backup/`: `integrity` (colecciones completas, ids únicos, 30 reglas de referencias del modelo real), `inspect` (JSON → versión → migración existente v1→v2 → entidades → integridad), `build` (serialización determinista, nombre `recomp-backup-YYYY-MM-DD.json`).
+- `app/services/backup.ts`: `exportBackup` (solo lectura), `inspectBackup`, `importBackup` (backup preventivo en memoria + store `backups`, UNA transacción sobre todas las colecciones salvo `backups`, verificación dentro y después; rollback explícito; `rollback_failed` explícito), `listLocalBackups`, `localBackupText`. Se conservan 3 preventivos.
+- La importación no ejecuta seed, reglas 8.9 ni `completeSession`; el arranque siguiente sí corre el seed de 8.2 (advertido en el resumen).
+- UI: bloque "Datos · backup local" en MÁS. Importar: archivo → validación → resumen → [CONFIRMAR IMPORTACIÓN] → advertencia → [IMPORTAR Y REEMPLAZAR]. Estados: idle, reading, invalid_file, validation_error, ready_to_import, importing, success, rollback, failure.

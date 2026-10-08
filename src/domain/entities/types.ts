@@ -441,7 +441,8 @@ export interface AppEvent extends BaseEntity {
 
 export interface Backup extends BaseEntity {
   schema_version: number
-  kind: 'auto_pre_migration' | 'manual'
+  /** 8.11 añade (aditivo) 'auto_pre_import': copia del estado previo a una importación. */
+  kind: 'auto_pre_migration' | 'manual' | 'auto_pre_import'
   blob: Blob
   bytes: number
 }

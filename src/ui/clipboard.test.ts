@@ -22,6 +22,17 @@ describe('privacidad: el código de 8.10 no tiene red ni fotos', () => {
     ...readdirSync(join(SRC, 'domain/report')).filter(f => !f.endsWith('.test.ts')).map(f => join(SRC, 'domain/report', f)),
     join(SRC, 'app/services/report.ts'), join(SRC, 'ui/components/CoachReportPanel.tsx'), join(SRC, 'ui/clipboard.ts'),
   ]
+  const backupFiles = [
+    ...readdirSync(join(SRC, 'domain/backup')).filter(f => !f.endsWith('.test.ts')).map(f => join(SRC, 'domain/backup', f)),
+    join(SRC, 'app/services/backup.ts'), join(SRC, 'ui/components/DataPanel.tsx'),
+  ]
+  for (const f of backupFiles) {
+    it(`8.11 ${f.slice(SRC.length + 1)}: sin red ni ejecución de contenido`, () => {
+      const src = readFileSync(f, 'utf8')
+      expect(src).not.toMatch(/\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource|https?:\/\//)
+      expect(src).not.toMatch(/\beval\s*\(|new Function\s*\(|innerHTML|dangerouslySetInnerHTML/)
+    })
+  }
   for (const f of files) {
     it(f.slice(SRC.length + 1), () => {
       const src = readFileSync(f, 'utf8')

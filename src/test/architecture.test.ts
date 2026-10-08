@@ -32,7 +32,7 @@ function importsOf(file: string): string[] {
 const layerOf = (file: string) => relative(SRC, file).split(/[\\/]/)[0] ?? ''
 const targetLayer = (imp: string) => {
   // Reglas de dominio: la UI solo las usa a través de app/services (Fase 8.5).
-  if (/^@domain\/(progression|rotation|nutrition|substitution|catalog|adherence|metrics|adjustments|report)\b/.test(imp)) return 'domain-rules'
+  if (/^@domain\/(progression|rotation|nutrition|substitution|catalog|adherence|metrics|adjustments|report|backup|validation)\b/.test(imp)) return 'domain-rules'
   const alias = imp.match(/^@(domain|app|repo|infra|ui)\b/)
   if (alias) return alias[1]!
   if (imp === 'dexie' || imp.startsWith('dexie/')) return 'dexie'

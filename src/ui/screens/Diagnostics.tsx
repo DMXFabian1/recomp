@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { StorageInfo } from '@repo/index'
-import { APP_VERSION } from '@domain/backup/schema'
+import { APP_VERSION } from '@app/services'
 import { useApp } from '../AppContext'
 import { AdjustmentPanel } from '../components/AdjustmentPanel'
 import { CoachReportPanel } from '../components/CoachReportPanel'
+import { DataPanel } from '../components/DataPanel'
 
 const fmtMB = (b?: number) => (b === undefined ? '—' : `${(b / 1048576).toFixed(1)} MB`)
 
@@ -27,6 +28,7 @@ export function Diagnostics() {
       <h1>Ajustes y diagnóstico</h1>
       <AdjustmentPanel onSettled={bump} />
       <CoachReportPanel refreshKey={rev} />
+      <DataPanel />
       {err && <div className="banner">No se puede leer el estado: {err}</div>}
       <div className="card">
         <div className="big">{info ? `v${info.schema_version}` : '…'}</div>

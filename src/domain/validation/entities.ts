@@ -419,7 +419,7 @@ export const appEventSchema = B.extend({
 
 export const backupEntitySchema = B.extend({
   schema_version: positiveInt,
-  kind: z.enum(['auto_pre_migration', 'manual']),
+  kind: z.enum(['auto_pre_migration', 'manual', 'auto_pre_import']),
   blob: blobSchema,
   bytes: nonNegativeInt,
 }) satisfies z.ZodType<T.Backup>
