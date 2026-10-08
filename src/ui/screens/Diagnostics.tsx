@@ -6,6 +6,9 @@ import { AdjustmentPanel } from '../components/AdjustmentPanel'
 import { CoachReportPanel } from '../components/CoachReportPanel'
 import { DataPanel } from '../components/DataPanel'
 
+/** 8.12: identificador del build (CI: VITE_BUILD_ID = commit). Permite saber qué versión está instalada en el teléfono. */
+const BUILD_ID = String(import.meta.env.VITE_BUILD_ID ?? 'dev').slice(0, 12)
+
 const fmtMB = (b?: number) => (b === undefined ? '—' : `${(b / 1048576).toFixed(1)} MB`)
 
 /** Diagnóstico: estado del almacenamiento. Es la única pantalla con contenido en la Fase 8.1. */
@@ -32,7 +35,7 @@ export function Diagnostics() {
       {err && <div className="banner">No se puede leer el estado: {err}</div>}
       <div className="card">
         <div className="big">{info ? `v${info.schema_version}` : '…'}</div>
-        <div className="muted">Versión de esquema · app {APP_VERSION}</div>
+        <div className="muted" data-testid="build-id">Versión de esquema · app {APP_VERSION} · build {BUILD_ID}</div>
         <dl className="kv">
           <dt>IndexedDB</dt><dd className={info?.ok ? 'status-ok' : 'status-crit'}>{info ? (info.ok ? 'OK' : 'Error') : '…'}</dd>
           <dt>Persistente</dt><dd>{info ? (info.persisted ? 'sí' : 'no') : '…'}</dd>

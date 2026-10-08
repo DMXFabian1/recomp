@@ -71,6 +71,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.6 Entrenamiento (series, evaluación/progresión visibles, sustitución, completar/abandonar/cancelar, aviso fuera de orden, cardio/remo, prueba mensual)
 - [x] 8.7 Comida (plan del día, Comí esto, sustituir/adaptar, Me salí, emergencia, omitir, proteína del día, inventario, lista de compras, edición de alimentos)
 - [x] 8.8 Progreso (cuerpo, fuerza, cardio, hábitos, metas; fotos locales; sin interpretación)
+- [~] 8.12 Deploy + PWA en dispositivo (validado en Chromium con build de producción; falta publicar en GitHub Pages y probar en el teléfono)
 - [x] 8.11 Backup e importación desde UI (export completo con fotos, import validado, atómico, con backup preventivo y rollback)
 - [x] 8.10 Reporte quincenal para Claude (CoachReport bajo demanda, solo lectura, copiar texto)
 - [x] 8.9 Reglas de ajuste (ventana 14 d, A>B>D>E>F, Recommendation pending → aceptar/ignorar; C/sueño/ánimo solo Alert)
@@ -149,3 +150,9 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - `app/services/backup.ts`: `exportBackup` (solo lectura), `inspectBackup`, `importBackup` (backup preventivo en memoria + store `backups`, UNA transacción sobre todas las colecciones salvo `backups`, verificación dentro y después; rollback explícito; `rollback_failed` explícito), `listLocalBackups`, `localBackupText`. Se conservan 3 preventivos.
 - La importación no ejecuta seed, reglas 8.9 ni `completeSession`; el arranque siguiente sí corre el seed de 8.2 (advertido en el resumen).
 - UI: bloque "Datos · backup local" en MÁS. Importar: archivo → validación → resumen → [CONFIRMAR IMPORTACIÓN] → advertencia → [IMPORTAR Y REEMPLAZAR]. Estados: idle, reading, invalid_file, validation_error, ready_to_import, importing, success, rollback, failure.
+
+## Deploy y PWA (Fase 8.12)
+- Build de producción bajo `/recomp/` verificado por `npm run check:dist` (rutas, manifest, SW, precache, iconos PNG). El workflow `.github/workflows/pages.yml` corre typecheck, lint, tests, build (con `VITE_BUILD_ID = commit`) y `check:dist` antes de desplegar.
+- El build visible en MÁS ("build …") identifica la versión instalada.
+- Iconos PNG 192/512/maskable y `apple-touch-icon` 180 (iOS no usa SVG).
+- Para publicar: crear el repo `recomp` en GitHub, `git remote add origin …`, `git push -u origin main`, y en Settings → Pages elegir "GitHub Actions". URL esperada: `https://<usuario>.github.io/recomp/`.

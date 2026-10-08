@@ -24,10 +24,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
       - run: npm test
       - run: npm run build
         env:
           VITE_BASE: /recomp/
+          VITE_BUILD_ID: ${{ github.sha }}
+      - run: npm run check:dist
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
