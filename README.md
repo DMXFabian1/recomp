@@ -71,7 +71,7 @@ Los datos están en `src/app/seed/data.ts` y provienen del protocolo aprobado. *
 - [x] 8.6 Entrenamiento (series, evaluación/progresión visibles, sustitución, completar/abandonar/cancelar, aviso fuera de orden, cardio/remo, prueba mensual)
 - [x] 8.7 Comida (plan del día, Comí esto, sustituir/adaptar, Me salí, emergencia, omitir, proteína del día, inventario, lista de compras, edición de alimentos)
 - [x] 8.8 Progreso (cuerpo, fuerza, cardio, hábitos, metas; fotos locales; sin interpretación)
-- [~] 8.12 Deploy + PWA en dispositivo (validado en Chromium con build de producción; falta publicar en GitHub Pages y probar en el teléfono)
+- [~] 8.12 Deploy + PWA (publicado en https://dmxfabian1.github.io/recomp/ el 2026-10-15; falta la prueba en el teléfono)
 - [x] 8.11 Backup e importación desde UI (export completo con fotos, import validado, atómico, con backup preventivo y rollback)
 - [x] 8.10 Reporte quincenal para Claude (CoachReport bajo demanda, solo lectura, copiar texto)
 - [x] 8.9 Reglas de ajuste (ventana 14 d, A>B>D>E>F, Recommendation pending → aceptar/ignorar; C/sueño/ánimo solo Alert)
